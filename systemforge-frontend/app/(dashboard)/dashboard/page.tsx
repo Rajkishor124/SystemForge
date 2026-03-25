@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, LayoutGrid, List, Brain, Activity, ArrowRight, Zap, Shield, Database, Loader2, Trash2, AlertCircle, Server, Network } from 'lucide-react';
+import { Plus, Brain, ArrowRight, Zap, Shield, Database, Loader2, Trash2, AlertCircle, Server } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -29,10 +29,10 @@ const APP_TYPE_ICONS: Record<string, typeof Server> = {
   SAAS: Server,
   FINTECH: Shield,
   HEALTHCARE: Shield,
-  SOCIAL_MEDIA: Activity,
+  SOCIAL_MEDIA: Zap,
   FOOD_DELIVERY: Zap,
   EDTECH: Brain,
-  IOT_PLATFORM: Network,
+  IOT_PLATFORM: Server,
   MARKETPLACE: Database,
   ENTERPRISE_INTERNAL: Server,
   CUSTOM: Brain,
