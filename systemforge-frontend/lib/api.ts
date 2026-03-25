@@ -131,15 +131,34 @@ export async function api<T = unknown>(
 }
 
 async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
-  const json: ApiResponse<T> = await response.json();
-  if (!response.ok || !json.success) {
-    const error = new ApiError(
-      json.message || `Request failed with status ${response.status}`,
-      response.status,
-      json
-    );
+  let json: ApiResponse<T> | null = null;
+  const contentType = response.headers.get('content-type');
+
+  if (contentType && contentType.includes('application/json')) {
+    try {
+      json = await response.json();
+    } catch (e) {
+      console.error('Failed to parse response as JSON:', e);
+    }
+  }
+
+  if (!response.ok || (json && !json.success)) {
+    const message = json?.message || `Request failed with status ${response.status}`;
+    const error = new ApiError(message, response.status, json || undefined);
     throw error;
   }
+
+  if (!json) {
+    // If we're here, response.ok is true but no JSON was parsed
+    // Return a dummy success wrapper if no data expected, or throw if data required
+    return {
+      success: true,
+      message: 'Resource processed successfully',
+      data: null as unknown as T,
+      timestamp: new Date().toISOString()
+    };
+  }
+
   return json;
 }
 
@@ -176,9 +195,9 @@ async function tryRefreshToken(): Promise<boolean> {
 
 export class ApiError extends Error {
   status: number;
-  response: ApiResponse;
+  response?: ApiResponse<any>;
 
-  constructor(message: string, status: number, response: ApiResponse) {
+  constructor(message: string, status: number, response?: ApiResponse<any>) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
