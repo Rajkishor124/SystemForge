@@ -33,6 +33,7 @@ import {
   Layout
 } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { motion, AnimatePresence } from 'motion/react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -239,8 +240,12 @@ export default function ArchitecturePage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 text-primary-container animate-spin" />
+      <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 bg-[#090e1c]">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary-container/20 blur-2xl rounded-full animate-pulse"></div>
+          <Loader2 className="w-10 h-10 text-primary-container animate-spin relative z-10" />
+        </div>
+        <p className="text-xs font-label uppercase tracking-widest text-[#dee1f7]/40 animate-pulse">Mapping Resources...</p>
       </div>
     );
   }
@@ -295,52 +300,79 @@ export default function ArchitecturePage() {
         </div>
 
         {/* Properties Panel */}
-        {selectedNode && (
-          <div className="w-80 glass-panel border-l border-outline-variant/10 p-6 overflow-y-auto custom-scrollbar z-10">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-label text-xs uppercase tracking-widest text-[#dee1f7]/60">Node Details</h3>
-              <button onClick={() => setSelectedNode(null)} className="text-[#dee1f7]/30 hover:text-[#dee1f7]">
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
+        <AnimatePresence>
+          {selectedNode && (
+            <motion.div 
+              initial={{ x: 320, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 320, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-80 glass-panel border-l border-white/10 p-6 overflow-y-auto custom-scrollbar z-10 shadow-[-8px_0_32px_rgba(0,0,0,0.5)]"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-label text-[10px] uppercase tracking-[0.2em] text-[#dee1f7]/40">Intelligence Node</h3>
+                <button onClick={() => setSelectedNode(null)} className="p-2 rounded-lg hover:bg-white/5 text-[#dee1f7]/30 hover:text-[#dee1f7] transition-colors">
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
 
-            <div className="mb-6">
-              <div className="text-[10px] text-primary-container font-black uppercase tracking-tighter mb-1">{selectedNode.data.type}</div>
-              <h4 className="text-xl font-bold text-[#e1fdff] font-headline">{selectedNode.id === 'gateway' ? 'API Gateway' : selectedNode.data.label}</h4>
-              <div className="text-xs text-[#dee1f7]/50 mt-1">{selectedNode.data.tech}</div>
-            </div>
+              <div className="mb-8 p-4 rounded-2xl bg-gradient-to-br from-white/5 to-transparent border border-white/5">
+                <div className="text-[9px] text-primary-container font-black uppercase tracking-widest mb-2 opacity-70">{selectedNode.data.type}</div>
+                <h4 className="text-2xl font-bold text-[#e1fdff] font-headline tracking-tight">{selectedNode.id === 'gateway' ? 'API Gateway' : selectedNode.data.label}</h4>
+                <div className="text-[11px] font-mono text-secondary-container mt-2 flex items-center gap-2">
+                  <Cpu className="w-3 h-3" /> {selectedNode.data.tech}
+                </div>
+              </div>
 
-            {selectedNode.data.recommendations && (
-              <div className="space-y-4">
-                <h5 className="text-[10px] uppercase tracking-widest font-bold text-[#dee1f7]/40 border-b border-outline-variant/10 pb-2">AI Insights</h5>
-                {selectedNode.data.recommendations.map((rec: any, idx: number) => (
-                  <div key={idx} className="p-3 rounded bg-white/5 border border-white/5">
-                    <div className="text-xs font-bold text-secondary-container mb-1">{rec.title}</div>
-                    <p className="text-[11px] text-[#dee1f7]/60 leading-relaxed">{rec.description}</p>
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="text-[9px] text-[#dee1f7]/30">Confidence Score</span>
-                      <span className="text-[10px] font-mono text-secondary-container">{Math.round(rec.confidence * 100)}%</span>
-                    </div>
+              {selectedNode.data.recommendations && (
+                <div className="space-y-6">
+                  <h5 className="text-[10px] uppercase tracking-[0.2em] font-black text-[#dee1f7]/20 flex items-center gap-3">
+                    <span className="shrink-0">AI Insights</span>
+                    <span className="h-px bg-white/5 flex-1"></span>
+                  </h5>
+                  {selectedNode.data.recommendations.map((rec: any, idx: number) => (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      key={idx} 
+                      className="p-4 rounded-xl bg-white/[0.03] border border-white/5 hover:border-secondary-container/30 transition-colors group"
+                    >
+                      <div className="text-xs font-bold text-secondary-container mb-2 group-hover:text-[#00f2ff] transition-colors">{rec.title}</div>
+                      <p className="text-[11px] text-[#dee1f7]/60 leading-relaxed">{rec.description}</p>
+                      <div className="mt-4 flex items-center justify-between pt-3 border-t border-white/5">
+                        <span className="text-[9px] text-[#dee1f7]/30 font-label tracking-widest uppercase">Confidence</span>
+                        <div className="flex items-center gap-2">
+                           <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
+                             <div className="h-full bg-secondary-container" style={{ width: `${rec.confidence * 100}%` }}></div>
+                           </div>
+                           <span className="text-[10px] font-mono text-secondary-container">{Math.round(rec.confidence * 100)}%</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+              
+              {selectedNode.id === 'gateway' && (
+                <div className="space-y-4 mt-8">
+                  <h5 className="text-[10px] uppercase tracking-[0.2em] font-black text-[#dee1f7]/20 flex items-center gap-3">
+                    <span className="shrink-0">Internal Stack</span>
+                    <span className="h-px bg-white/5 flex-1"></span>
+                  </h5>
+                  <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
+                    <div className="text-xs font-bold text-primary-container mb-2 text-gradient">Route Mapping</div>
+                    <p className="text-[11px] text-[#dee1f7]/60 leading-relaxed text-balance">Dynamic cluster routing based on weighted service discovery.</p>
                   </div>
-                ))}
-              </div>
-            )}
-            
-            {selectedNode.id === 'gateway' && (
-              <div className="space-y-4">
-                <h5 className="text-[10px] uppercase tracking-widest font-bold text-[#dee1f7]/40 border-b border-outline-variant/10 pb-2">Standard Components</h5>
-                <div className="p-3 rounded bg-white/5 border border-white/5">
-                  <div className="text-xs font-bold text-primary-container mb-1">Route Mapping</div>
-                  <p className="text-[11px] text-[#dee1f7]/60 leading-relaxed">Dynamic routing based on service discovery.</p>
+                  <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
+                     <div className="text-xs font-bold text-primary-container mb-2 text-gradient">Rate Limiting</div>
+                     <p className="text-[11px] text-[#dee1f7]/60 leading-relaxed text-balance">Leaky-bucket throttling with Redis-backed state management.</p>
+                  </div>
                 </div>
-                <div className="p-3 rounded bg-white/5 border border-white/5">
-                   <div className="text-xs font-bold text-primary-container mb-1">Rate Limiting</div>
-                   <p className="text-[11px] text-[#dee1f7]/60 leading-relaxed">Bucket-based throttling per API key.</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

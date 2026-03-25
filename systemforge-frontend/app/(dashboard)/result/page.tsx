@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Network, Download, Share, CheckCircle, Server, Database, Shield, Zap, ArrowRight, Loader2, AlertCircle, Lightbulb, AlertTriangle, ChevronRight } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { motion, AnimatePresence } from 'motion/react';
 
 // ─── Types matching backend DTOs ─────────────────────────────────────────────
 
@@ -104,8 +105,12 @@ export default function ResultPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 text-primary-container animate-spin" />
+      <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 bg-[#090e1c]">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary-container/20 blur-2xl rounded-full animate-pulse"></div>
+          <Loader2 className="w-10 h-10 text-primary-container animate-spin relative z-10" />
+        </div>
+        <p className="text-xs font-label uppercase tracking-widest text-[#dee1f7]/40 animate-pulse">Compiling Architecture...</p>
       </div>
     );
   }
@@ -128,98 +133,136 @@ export default function ResultPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto w-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6"
+      >
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/10 border border-primary-container/20 text-primary-container text-[10px] font-bold uppercase tracking-widest mb-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00f2ff]/10 border border-[#00f2ff]/20 text-[#00f2ff] text-[10px] font-bold uppercase tracking-widest mb-4"
+          >
             <CheckCircle className="w-3 h-3" />
-            Generation Complete
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight font-headline text-[#e1fdff] mb-2">{config.configName}</h1>
+            Forge Complete
+          </motion.div>
+          <h1 className="text-4xl font-bold tracking-tight font-headline text-[#e1fdff] mb-2">
+            {config.configName} <span className="text-gradient">Blueprint</span>
+          </h1>
           <p className="text-[#dee1f7]/60 text-sm">
             {formatModuleName(config.appType)} · {config.appScale} scale · Generated {new Date(config.createdAt).toLocaleDateString()}
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="px-4 py-2 rounded-lg bg-surface-container border border-outline-variant/20 text-sm font-bold hover:bg-surface-container-high transition-colors flex items-center gap-2">
-            <Share className="w-4 h-4" /> Share
-          </button>
-          <button className="px-4 py-2 rounded-lg bg-surface-container border border-outline-variant/20 text-sm font-bold hover:bg-surface-container-high transition-colors flex items-center gap-2">
+          <button className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-colors flex items-center gap-2">
             <Download className="w-4 h-4" /> Export
           </button>
-          <Link href={`/architecture?configId=${configId}`} className="cta-gradient text-on-primary px-5 py-2 rounded-lg font-bold text-sm shadow-lg shadow-primary-container/20 active:scale-95 transition-transform flex items-center gap-2">
-            <Network className="w-4 h-4" /> View Graph
+          <Link href={`/architecture?configId=${configId}`} className="cta-gradient text-on-primary px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary-container/20 active:scale-95 transition-transform flex items-center gap-2">
+            <Network className="w-4 h-4" /> View Map
           </Link>
         </div>
-      </div>
+      </motion.div>
 
       {result ? (
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* Executive Summary */}
-            <section className="glass-card rounded-xl p-8">
-              <h2 className="text-xl font-bold font-headline mb-4 border-b border-outline-variant/20 pb-2">Executive Summary</h2>
-              <p className="text-[#dee1f7]/80 leading-relaxed text-sm whitespace-pre-line">
+            <motion.section 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass-card rounded-2xl p-8 border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent"
+            >
+              <h2 className="text-xl font-bold font-headline mb-6 flex items-center gap-3">
+                <span className="p-2 rounded-lg bg-primary-container/10 text-primary-container">
+                  <Network className="w-5 h-5" />
+                </span>
+                Blueprint Overview
+              </h2>
+              <p className="text-[#dee1f7]/80 leading-relaxed text-sm whitespace-pre-line border-l-2 border-primary-container/30 pl-6 py-2">
                 {result.architectureSummary || 'Architecture recommendations generated based on your system requirements.'}
               </p>
-            </section>
+            </motion.section>
 
             {/* Modules */}
             {result.modules && result.modules.length > 0 && (
-              <section className="space-y-4">
-                <h2 className="text-xl font-bold font-headline mb-4">System Modules</h2>
-                {result.modules.map((mod, idx) => {
-                  const Icon = getModuleIcon(mod.module);
-                  return (
-                    <div key={idx} className="glass-card rounded-xl p-6">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="p-3 rounded-lg bg-primary-container/10 text-primary-container shrink-0">
-                          <Icon className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-lg font-bold text-[#e1fdff]">{formatModuleName(mod.module)}</h3>
-                      </div>
-                      <div className="space-y-3 pl-16">
-                        {mod.recommendations.map((rec, ri) => (
-                          <div key={ri} className="p-3 rounded bg-surface-container-lowest border border-outline-variant/10">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-bold text-[#e1fdff]">{rec.title}</span>
-                              <span className="text-[10px] font-mono text-primary-container bg-primary-container/10 px-2 py-0.5 rounded">
-                                {Math.round(rec.confidence * 100)}% confidence
-                              </span>
-                            </div>
-                            <p className="text-xs text-[#dee1f7]/70 mb-2">{rec.description}</p>
-                            {rec.alternatives && rec.alternatives.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                <span className="text-[10px] text-[#dee1f7]/40">Alternatives:</span>
-                                {rec.alternatives.map((alt, ai) => (
-                                  <span key={ai} className="px-2 py-0.5 rounded bg-surface-container text-[10px] font-mono text-[#dee1f7]/60">
-                                    {alt}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+              <section className="space-y-6">
+                <h2 className="text-xl font-bold font-headline mb-4 flex items-center gap-2">
+                  System Modules <span className="text-[10px] font-mono text-[#dee1f7]/40 ml-2">{result.modules.length} Nodes</span>
+                </h2>
+                <div className="grid gap-6">
+                  {result.modules.map((mod, idx) => {
+                    const Icon = getModuleIcon(mod.module);
+                    return (
+                      <motion.div 
+                        key={idx}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + idx * 0.1 }}
+                        className="glass-card rounded-2xl p-6 border-white/10 hover:border-[#00f2ff]/30 transition-all duration-500 group"
+                      >
+                        <div className="flex items-center gap-4 mb-6">
+                          <div className="p-3 rounded-xl bg-[#00f2ff]/10 text-[#00f2ff] border border-[#00f2ff]/20 group-hover:scale-110 transition-transform">
+                            <Icon className="w-6 h-6" />
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+                          <h3 className="text-lg font-bold text-[#e1fdff] font-headline">{formatModuleName(mod.module)}</h3>
+                        </div>
+                        <div className="space-y-4 pl-0 md:pl-16">
+                          {mod.recommendations.map((rec, ri) => (
+                            <div key={ri} className="p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-bold text-[#e1fdff]">{rec.title}</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden hidden sm:block">
+                                    <div className="h-full bg-primary-container" style={{ width: `${rec.confidence * 100}%` }}></div>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-primary-container font-black">
+                                    {Math.round(rec.confidence * 100)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-[#dee1f7]/60 leading-relaxed mb-4">{rec.description}</p>
+                              {rec.alternatives && rec.alternatives.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2 pt-3 border-t border-white/5">
+                                  <span className="text-[9px] uppercase tracking-widest text-[#dee1f7]/30 font-black">Alternatives</span>
+                                  {rec.alternatives.map((alt, ai) => (
+                                    <span key={ai} className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-[#dee1f7]/50 border border-white/5">
+                                      {alt}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </section>
             )}
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-8">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-8"
+          >
             {/* AI Improvements */}
             {result.aiImprovements && result.aiImprovements.length > 0 && (
-              <div className="glass-card rounded-xl p-6">
-                <h3 className="font-label text-xs uppercase tracking-widest text-[#dee1f7]/60 mb-4 flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-primary-container" />
-                  AI Improvements
+              <div className="glass-card rounded-2xl p-6 border-white/5 bg-gradient-to-br from-[#00f2ff]/5 to-transparent">
+                <h3 className="font-label text-[10px] uppercase tracking-widest text-[#dee1f7]/40 mb-6 flex items-center gap-3">
+                  <Lightbulb className="w-4 h-4 text-[#00f2ff]" />
+                  AI Optimization
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {result.aiImprovements.map((item, i) => (
-                    <div key={i} className="flex gap-2 text-xs text-[#dee1f7]/70">
-                      <ChevronRight className="w-3 h-3 text-primary-container shrink-0 mt-0.5" />
+                    <div key={i} className="flex gap-3 text-xs text-[#dee1f7]/70 leading-relaxed group">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#00f2ff] mt-1.5 group-hover:scale-125 transition-transform" />
                       {item}
                     </div>
                   ))}
@@ -229,15 +272,15 @@ export default function ResultPage() {
 
             {/* Trade-offs */}
             {result.aiTradeoffs && result.aiTradeoffs.length > 0 && (
-              <div className="glass-card rounded-xl p-6">
-                <h3 className="font-label text-xs uppercase tracking-widest text-[#dee1f7]/60 mb-4 flex items-center gap-2">
+              <div className="glass-card rounded-2xl p-6 border-white/5 bg-gradient-to-br from-tertiary-container/5 to-transparent">
+                <h3 className="font-label text-[10px] uppercase tracking-widest text-[#dee1f7]/40 mb-6 flex items-center gap-3">
                   <AlertTriangle className="w-4 h-4 text-tertiary-container" />
-                  Trade-offs
+                  Engineering Trade-offs
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {result.aiTradeoffs.map((item, i) => (
-                    <div key={i} className="flex gap-2 text-xs text-[#dee1f7]/70">
-                      <ChevronRight className="w-3 h-3 text-tertiary-container shrink-0 mt-0.5" />
+                    <div key={i} className="flex gap-3 text-xs text-[#dee1f7]/70 leading-relaxed group">
+                      <div className="w-1.5 h-1.5 rounded bg-tertiary-container mt-1.5 group-hover:rotate-45 transition-transform" />
                       {item}
                     </div>
                   ))}
@@ -246,33 +289,26 @@ export default function ResultPage() {
             )}
 
             {/* Next Steps */}
-            <div className="glass-card rounded-xl p-6">
-              <h3 className="font-label text-xs uppercase tracking-widest text-[#dee1f7]/60 mb-4">Next Steps</h3>
+            <div className="glass-card rounded-2xl p-6 border-white/5">
+              <h3 className="font-label text-[10px] uppercase tracking-widest text-[#dee1f7]/40 mb-6">Operations</h3>
               <div className="space-y-3">
-                <Link href={`/architecture?configId=${configId}`} className="w-full flex items-center justify-between p-3 rounded bg-surface-container-lowest hover:bg-surface-container transition-colors border border-outline-variant/10 group">
+                <Link href={`/architecture?configId=${configId}`} className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[#00f2ff]/10 transition-all border border-white/5 group">
                   <div className="flex items-center gap-3">
-                    <Network className="w-4 h-4 text-primary-container" />
-                    <span className="text-sm">View Architecture Graph</span>
+                    <Network className="w-4 h-4 text-[#00f2ff]" />
+                    <span className="text-sm font-bold text-[#e1fdff]">Explore Topology</span>
                   </div>
-                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight className="w-4 h-4 text-[#00f2ff] opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                 </Link>
-                <Link href="/create" className="w-full flex items-center justify-between p-3 rounded bg-surface-container-lowest hover:bg-surface-container transition-colors border border-outline-variant/10 group">
+                <Link href="/create" className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 group">
                   <div className="flex items-center gap-3">
                     <Zap className="w-4 h-4 text-secondary-container" />
-                    <span className="text-sm">Create New Design</span>
+                    <span className="text-sm font-bold text-[#e1fdff]">New Configuration</span>
                   </div>
-                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
-                <Link href="/dashboard" className="w-full flex items-center justify-between p-3 rounded bg-surface-container-lowest hover:bg-surface-container transition-colors border border-outline-variant/10 group">
-                  <div className="flex items-center gap-3">
-                    <Database className="w-4 h-4 text-tertiary-container" />
-                    <span className="text-sm">Back to Projects</span>
-                  </div>
-                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                 </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       ) : (
         <div className="glass-card rounded-xl p-12 text-center">

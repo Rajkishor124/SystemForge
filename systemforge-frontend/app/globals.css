@@ -63,13 +63,13 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-[#2f3445]/70 backdrop-blur-md;
+    @apply bg-[#1a1f2f]/60 backdrop-blur-xl border-b border-white/5;
   }
   .glass-card {
-    @apply bg-[#2f3445]/70 backdrop-blur-md border border-[#3a494b]/20;
+    @apply bg-[#1a1f2f]/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-[#1a1f2f]/60 hover:border-white/20 transition-all duration-500;
   }
   .cta-gradient {
-    @apply bg-gradient-to-br from-[#00f2ff] to-[#0566d9];
+    @apply bg-gradient-to-br from-[#00f2ff] via-[#0566d9] to-[#0433ff] shadow-[0_0_20px_rgba(0,242,255,0.3)] hover:shadow-[0_0_35px_rgba(0,242,255,0.5)];
   }
   .text-gradient {
     @apply bg-gradient-to-r from-[#e1fdff] to-[#00f2ff] text-transparent bg-clip-text;
