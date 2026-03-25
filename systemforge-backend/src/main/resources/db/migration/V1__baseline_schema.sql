@@ -186,21 +186,3 @@ CREATE INDEX IF NOT EXISTS idx_notif_status    ON notification_events (status);
 CREATE INDEX IF NOT EXISTS idx_notif_user_id   ON notification_events (user_id);
 CREATE INDEX IF NOT EXISTS idx_notif_created   ON notification_events (created_at);
 
--- ─── SEED: Default ADMIN user ─────────────────────────────────────────────────
-INSERT INTO users (id, name, email, password, role, is_email_verified, account_status, auth_provider,
-                   is_deleted, last_login_at, created_at, updated_at, version)
-VALUES (
-    gen_random_uuid(),
-    'SystemForge Admin',
-    'admin@systemforge.io',
-    NULL,
-    'ADMIN',
-    TRUE,
-    'ACTIVE',
-    'LOCAL',
-    FALSE,
-    NULL,
-    NOW(),
-    NOW(),
-    0
-);
