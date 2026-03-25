@@ -2,6 +2,9 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Next.js 16 requires this to acknowledge Turbopack when a webpack config is present
+  // @ts-ignore
+  turbopack: {},
   async rewrites() {
     return [
       {
@@ -13,6 +16,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  experimental: {},
   // Allow access to remote image placeholder.
   images: {
     remotePatterns: [
