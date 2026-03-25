@@ -1,0 +1,380 @@
+# 🚀 SYSTEMFORGE — FULL PROJECT BLUEPRINT
+
+---
+
+# 🧠 1. PROJECT OVERVIEW
+
+SystemForge is an **enterprise-grade backend platform** that helps developers:
+
+👉 Design scalable system architectures
+👉 Choose the right backend components
+👉 Get intelligent recommendations based on their app
+
+This is NOT a CRUD app.
+This is a **System Design Intelligence Engine**.
+
+---
+
+# 🎯 CORE IDEA
+
+Instead of developers guessing architecture…
+
+SystemForge will:
+
+* Ask about their app
+* Understand requirements
+* Suggest:
+
+  * Authentication strategy
+  * Database choice
+  * Architecture style
+  * Scaling approach
+  * Tech stack
+
+---
+
+# 💡 EXAMPLE
+
+Input:
+
+* App: Rapido clone
+* Scale: Medium
+* Features: Auth, Payments
+
+Output:
+
+* OTP-based login
+* JWT + refresh tokens
+* Microservices (future-ready)
+* Redis caching
+* Queue system (Kafka)
+
+---
+
+# 🧱 2. TECH STACK
+
+## Backend
+
+* Java 21
+* Spring Boot 3.x
+* Maven
+* YAML config
+
+## Database
+
+* MySQL (primary)
+* Redis (future caching)
+
+## Security
+
+* JWT (access + refresh)
+* OTP authentication
+
+## Architecture
+
+* Modular Monolith
+* Microservice-ready
+
+---
+
+# 🏗️ 3. SYSTEM ARCHITECTURE
+
+## Current Approach
+
+👉 Modular Monolith
+
+Modules:
+
+* auth
+* user
+* recommendation
+* system
+* template
+* notification
+* common
+
+Each module:
+
+* Independent
+* No direct cross-access
+* Communicates via services
+
+---
+
+## Future Evolution
+
+Phase 1 → Modular Monolith
+Phase 2 → Extract services
+Phase 3 → Full microservices
+
+---
+
+# 🔐 4. AUTH MODULE (COMPLETED)
+
+## Features
+
+* Email/password login
+* OTP login
+* Auto-registration (OTP)
+* JWT authentication
+* Refresh token rotation
+* Token hashing
+* AccountStatus system
+* AuthProvider system
+
+## Security Level
+
+👉 Enterprise-grade
+
+Includes:
+
+* SecureRandom OTP
+* SHA-256 token hashing
+* Stateless JWT validation
+* Token reuse detection ready
+
+---
+
+# 👤 5. USER MODULE (COMPLETED)
+
+## Features
+
+* Profile management
+* Password change
+* Soft delete
+* Role-based system
+* Account lifecycle management
+
+## Design
+
+* Entity + DTO separation
+* Mapper layer
+* Clean service layer
+
+---
+
+# 🔥 6. RECOMMENDATION MODULE (CORE FEATURE)
+
+## PURPOSE
+
+This is the **brain of SystemForge**
+
+👉 It generates system design suggestions
+
+---
+
+## TARGET ARCHITECTURE
+
+### 🧠 Engine Layer
+
+recommendation/engine/
+
+* RecommendationEngine
+
+---
+
+### ⚙️ Rule System
+
+recommendation/rule/
+
+* RecommendationRule (interface)
+
+Implementations:
+
+* AuthRule
+* PaymentRule
+* NotificationRule
+* ArchitectureRule
+
+---
+
+### 🧩 Context Model
+
+recommendation/model/
+
+* ProjectContext
+
+---
+
+### 📊 Output Model
+
+recommendation/model/
+
+* SystemDesignSuggestion
+
+---
+
+### 🎯 Flow
+
+1. User sends request
+2. Convert → ProjectContext
+3. Engine executes rules
+4. Rules generate suggestions
+5. Engine aggregates result
+6. Response returned
+
+---
+
+## WHY RULE ENGINE?
+
+Without it ❌:
+
+* messy if-else
+* hard to scale
+
+With it ✅:
+
+* plug-and-play rules
+* clean logic
+* extensible system
+
+---
+
+# 🧾 7. SYSTEM MODULE (FUTURE)
+
+Will handle:
+
+* Generated architecture
+* System templates
+* Export design (PDF / JSON)
+
+---
+
+# 🧩 8. TEMPLATE MODULE (FUTURE)
+
+* Pre-built system templates
+* Example:
+
+  * Uber backend template
+  * E-commerce backend template
+
+---
+
+# 📩 9. NOTIFICATION MODULE
+
+Already used for:
+
+* OTP emails
+
+Future:
+
+* Push notifications
+* Event-based messaging
+
+---
+
+# ⚙️ 10. DESIGN PRINCIPLES
+
+## MUST FOLLOW
+
+* Clean Architecture
+* SOLID principles
+* No business logic in controller
+* DTO ≠ Entity
+* Interface-driven design
+
+---
+
+## CODING RULES
+
+* No direct repository access outside module
+* Use enums (no magic strings)
+* Always validate input
+* Use transaction boundaries properly
+
+---
+
+# 🔐 11. SECURITY PRINCIPLES
+
+* Never expose internal data
+* Hash sensitive tokens
+* Use stateless auth
+* Prevent replay attacks
+* Use role-based access
+
+---
+
+# 📈 12. SCALABILITY PLAN
+
+## Phase 1
+
+* Modular monolith
+
+## Phase 2
+
+* Introduce:
+
+  * Redis
+  * Kafka
+
+## Phase 3
+
+* Microservices:
+
+  * Auth service
+  * Recommendation service
+
+---
+
+# 💰 13. MONETIZATION PLAN
+
+SystemForge can become:
+
+## SaaS Product
+
+* Free tier → basic suggestions
+* Paid tier → advanced architecture
+* Pro → code generation
+
+---
+
+## API Platform
+
+* Expose recommendation engine as API
+* Charge per request
+
+---
+
+# 🚀 14. FUTURE FEATURES
+
+* AI-powered suggestions
+* Auto code generation
+* System diagram generator
+* Architecture export
+* Dev onboarding assistant
+
+---
+
+# 🧠 FINAL VISION
+
+SystemForge =
+
+👉 “ChatGPT for backend system design”
+
+---
+
+# 🔥 YOUR GOAL
+
+Build a system that:
+
+* Helps developers think like architects
+* Saves time
+* Suggests best practices automatically
+
+---
+
+# 🚀 NEXT STEP
+
+Start working on:
+
+👉 Recommendation Engine
+
+This is:
+
+💡 The heart of your product
+💡 The feature that makes it unique
+💡 The part that can make you money
+
+---
+
+END OF BLUEPRINT

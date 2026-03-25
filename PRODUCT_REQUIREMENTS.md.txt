@@ -1,0 +1,52 @@
+# PRODUCT_REQUIREMENTS.md
+
+## Project: SystemForge
+
+SystemForge is a backend system design builder platform.
+
+## Core Features
+
+1. System Builder
+
+* Users can select systems like:
+
+  * Authentication
+  * Payment
+  * Notification
+  * Database
+* Users can customize configurations
+
+2. Recommendation Engine
+
+* Suggest best architecture based on:
+
+  * App type (ride-hailing, e-commerce, etc.)
+  * Scale (small, medium, large)
+
+3. Output Generator
+
+* Generate:
+
+  * API structure
+  * Database schema
+  * Tech stack
+  * System design explanation
+
+4. Template System
+
+* Predefined system templates
+* Example: OTP Auth for ride apps
+
+---
+
+## Target Users
+
+* Developers
+* Startup founders
+* Backend engineers
+
+---
+
+## Goal
+
+To simplify system design and provide production-ready backend blueprints.

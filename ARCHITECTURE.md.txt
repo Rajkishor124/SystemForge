@@ -1,0 +1,328 @@
+# ARCHITECTURE.md
+
+## SystemForge — Backend Architecture
+
+---
+
+## 1. System Overview
+
+SystemForge is an enterprise-grade backend platform that allows developers to design, customize, and generate scalable system architectures for their applications.
+
+It acts as a **System Design Builder**, enabling users to:
+
+* Select backend systems (Auth, Payment, Notification, etc.)
+* Customize configurations
+* Generate production-ready architecture blueprints
+
+The backend is designed as a **Modular Monolith**, with a clear path to microservices.
+
+---
+
+## 2. High-Level Architecture
+
+```
+Client (React / Web App)
+        │
+        ▼
+API Gateway (Future)
+        │
+        ▼
+Spring Boot Backend (Modular Monolith)
+        │
+ ┌─────────────────────────────────────────┐
+ │            CORE MODULES                 │
+ │                                         │
+ │  Auth Module                            │
+ │  User Module                            │
+ │  System Module (Core Engine) ⭐          │
+ │  Template Module                        │
+ │  Recommendation Module                  │
+ │  Notification Module                    │
+ │  Admin Module                           │
+ │                                         │
+ │  Common (Shared utilities/config)       │
+ └─────────────────────────────────────────┘
+        │
+        ▼
+Database (MySQL → PostgreSQL later)
+        │
+        ▼
+Future:
+- Redis (Caching)
+- Kafka (Event Streaming)
+```
+
+---
+
+## 3. Module Architecture
+
+Each module is isolated and follows clean architecture:
+
+```
+module/
+├── controller
+├── service
+├── repository
+├── entity
+├── dto
+├── mapper
+```
+
+### Modules
+
+#### 1. Auth Module
+
+* Handles authentication strategies
+* Supports:
+
+  * OTP
+  * Email/Password
+  * Social login (future)
+
+#### 2. User Module
+
+* User profile management
+* Roles:
+
+  * ADMIN
+  * DEVELOPER
+
+#### 3. System Module ⭐ (CORE)
+
+* Main engine of the platform
+* Responsible for:
+
+  * System selection (Auth, Payment, etc.)
+  * System configuration
+  * User-defined architecture
+
+#### 4. Template Module
+
+* Stores predefined system templates
+* Example:
+
+  * OTP Auth for ride-hailing apps
+  * JWT Auth for SaaS apps
+
+#### 5. Recommendation Module
+
+* Suggests best systems based on:
+
+  * App type
+  * Scale
+  * Features
+
+#### 6. Notification Module
+
+* Sends:
+
+  * Emails
+  * Push notifications
+  * System alerts
+
+#### 7. Admin Module
+
+* Manage templates
+* Manage users
+* Monitor usage
+
+#### 8. Common Module
+
+* ApiResponse
+* Exceptions
+* Configurations
+* Utilities
+
+---
+
+## 4. Core Engine (System Builder)
+
+### Flow
+
+```
+User selects:
+  App Type (e.g., Ride App)
+
+        ↓
+
+User selects systems:
+  - Auth
+  - Payment
+  - Notification
+
+        ↓
+
+User customizes:
+  - Auth Type = OTP
+  - Payment = Razorpay
+
+        ↓
+
+SystemForge Engine processes:
+  - Applies rules
+  - Matches templates
+  - Generates architecture
+
+        ↓
+
+Output:
+  - API design
+  - DB schema
+  - Tech stack
+  - System explanation
+```
+
+---
+
+## 5. Data Architecture
+
+### Key Entities
+
+#### User
+
+* id (UUID)
+* name
+* email
+* role
+* createdAt, updatedAt
+* isDeleted
+
+#### System
+
+* id (UUID)
+* name (Auth, Payment, etc.)
+* type
+* description
+
+#### Template
+
+* id
+* systemType
+* config (JSON)
+* description
+
+#### UserSystemConfig
+
+* id
+* userId
+* selectedSystems (JSON)
+* appType
+* createdAt
+
+---
+
+## 6. API Design
+
+### Base URL
+
+```
+/api/v1
+```
+
+### Example APIs
+
+#### System APIs
+
+* GET /systems
+* POST /systems/select
+* POST /systems/generate
+
+#### Template APIs
+
+* GET /templates
+* POST /templates (admin)
+
+#### Recommendation APIs
+
+* POST /recommend
+
+---
+
+## 7. Authentication Strategy (Future)
+
+* JWT-based authentication
+* Access Token + Refresh Token
+* Role-based authorization
+
+---
+
+## 8. Caching Strategy (Future)
+
+Redis will be used for:
+
+* User sessions
+* Frequently used templates
+* Recommendation results
+
+---
+
+## 9. Event Architecture (Future)
+
+* Domain events:
+
+  * SystemGeneratedEvent
+  * TemplateSelectedEvent
+
+* Kafka for async processing
+
+---
+
+## 10. Logging & Observability
+
+* Structured logging
+* Correlation ID per request
+* Metrics (future):
+
+  * API latency
+  * System generation count
+
+---
+
+## 11. Scalability Strategy
+
+### Phase 1
+
+* Modular Monolith
+
+### Phase 2
+
+* Extract services:
+
+  * Recommendation Service
+  * Notification Service
+
+### Phase 3
+
+* Full microservices
+
+---
+
+## 12. Design Principles
+
+* Clean Architecture
+* SOLID principles
+* Loose coupling
+* High cohesion
+* API-first design
+
+---
+
+## 13. Future Enhancements
+
+* AI-based architecture generation
+* Code generation (Spring Boot starter)
+* Export to GitHub
+* Template marketplace
+
+---
+
+## 14. Summary
+
+SystemForge backend is designed to:
+
+* Be scalable from day one
+* Follow industry best practices
+* Support future microservice migration
+* Provide intelligent system design capabilities
+
+This is not just a backend — it is a system design platform.

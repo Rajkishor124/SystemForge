@@ -1,0 +1,41 @@
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend
+systemforge-frontend/node_modules/
+systemforge-frontend/.next/
+systemforge-frontend/out/
+systemforge-frontend/coverage/
+
+# Backend
+systemforge-backend/target/
+systemforge-backend/build/
+systemforge-backend/.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+systemforge-backend/logs/
+systemforge-backend/boot_log*.txt
+systemforge-backend/test_output*.txt
+systemforge-backend/compile_log*.txt
+systemforge-backend/compile_output*.txt
+systemforge-backend/*-utf8.txt
+systemforge-backend/*-utf16.txt
+systemforge-backend/boot_pg*.txt
+systemforge-backend/tree_log*.txt
+systemforge-backend/clean-test-output*.txt
+systemforge-backend/surefire-err.txt
+
+# Environment / Sensitive
+.env
+.env.*
+!.env.example
+systemforge-frontend/.env*
+systemforge-backend/.env*

@@ -1,0 +1,33 @@
+# SYSTEM_DESIGN_RULES.md
+
+## Principles
+
+* Prefer modular monolith first, microservices later
+* Design for high scalability
+* Avoid tight coupling
+* Ensure clear module boundaries
+
+## Rules
+
+* No direct DB access across modules
+* All communication via service interfaces
+* Use event-driven approach for async operations
+* Design APIs before implementation
+
+## Performance
+
+* Avoid N+1 queries
+* Use caching where needed
+* Design for horizontal scaling
+
+## Security
+
+* Always validate inputs
+* Use JWT-based authentication
+* Never expose internal data
+
+## Code Quality
+
+* Follow SOLID principles
+* Keep business logic in services
+* Use DTOs for API layer

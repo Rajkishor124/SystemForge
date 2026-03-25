@@ -1,0 +1,23 @@
+# DATABASE_GUIDELINES.md
+
+## Rules
+
+* Use UUID as primary key
+* Use soft delete (isDeleted)
+* Add createdAt, updatedAt fields
+* Use version for optimistic locking
+
+## Indexing
+
+* Index frequently queried fields
+* Use composite indexes when needed
+
+## Scalability
+
+* Avoid joins across unrelated domains
+* Design for sharding in future
+
+## Data Integrity
+
+* Use foreign keys carefully
+* Maintain consistency through service layer

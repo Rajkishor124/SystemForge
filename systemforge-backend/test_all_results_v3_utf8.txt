@@ -1,0 +1,2199 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.systemforge:systemforge-backend >-----------------
+[INFO] Building systemforge-backend 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ systemforge-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ systemforge-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ systemforge-backend ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ systemforge-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 10 source files with javac [debug parameters release 21] to target\test-classes
+[WARNING] The following options were not recognized by any processor: '[mapstruct.verbose, mapstruct.defaultComponentModel]'
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[39,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[WARNING] /D:/Startup/SystemForge/systemforge-backend/src/test/java/com/systemforge/backend/system/controller/SystemControllerTest.java:[42,6] org.springframework.boot.test.mock.mockito.MockBean in org.springframework.boot.test.mock.mockito has been deprecated and marked for removal
+[INFO] 
+[INFO] --- surefire:3.5.5:test (default-test) @ systemforge-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.systemforge.backend.admin.service.impl.AdminServiceImplTest
+.\mvnw.cmd : Mockito 
+is currently 
+self-attaching to 
+enable the 
+inline-mock-maker. 
+This will no longer 
+work in future 
+releases of the JDK. 
+Please add Mockito as 
+an agent to your build 
+as described in 
+Mockito's 
+documentation: https://
+javadoc.io/doc/org.mock
+ito/mockito-core/latest
+/org.mockito/org/mockit
+o/Mockito.html#0.3
+At line:1 char:1
++ .\mvnw.cmd test > tes
+t_all_results_v3.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Mockito is cu   
+ rr...ockito.html#0    
+.3:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+WARNING: A Java agent 
+has been loaded 
+dynamically 
+(C:\Users\Rajkishor Mur
+mu\.m2\repository\net\b
+ytebuddy\byte-buddy-age
+nt\1.17.8\byte-buddy-ag
+ent-1.17.8.jar)
+WARNING: If a 
+serviceability tool is 
+in use, please run 
+with -XX:+EnableDynamic
+AgentLoading to hide 
+this warning
+WARNING: If a 
+serviceability tool is 
+not in use, please run 
+with -Djdk.instrument.t
+raceUsage for more 
+information
+WARNING: Dynamic 
+loading of agents will 
+be disallowed by 
+default in a future 
+release
+Java HotSpot(TM) 
+64-Bit Server VM 
+warning: Sharing is 
+only supported for 
+boot loader classes 
+because bootstrap 
+classpath has been 
+appended
+10:56:02.190 [main] INFO com.systemforge.backend.admin.service.impl.AdminServiceImpl -- ADMIN: Deactivating user id=90a052ea-040f-4991-9b3b-a68d04e58a60
+10:56:02.323 [main] INFO com.systemforge.backend.admin.service.impl.AdminServiceImpl -- ADMIN: Changing role for user id=08bd4ff8-0aad-4d94-98dd-eeb3e1bde50f to role=ADMIN
+10:56:02.337 [main] INFO com.systemforge.backend.admin.service.impl.AdminServiceImpl -- ADMIN: Activating user id=59526a5e-4526-4b85-a27b-496cc117d845
+10:56:02.349 [main] INFO com.systemforge.backend.admin.service.impl.AdminServiceImpl -- ADMIN: Changing role for user id=93596ebc-8f47-4a0f-b4c5-3c176db5da53 to role=SUPER_ADMIN
+10:56:02.364 [main] INFO com.systemforge.backend.admin.service.impl.AdminServiceImpl -- ADMIN: Activating user id=c4c96e99-6b17-4048-86d3-9eb6cb56f847
+10:56:02.373 [main] INFO com.systemforge.backend.admin.service.impl.AdminServiceImpl -- Computing platform statistics
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.344 s -- in com.systemforge.backend.admin.service.impl.AdminServiceImplTest
+[INFO] Running com.systemforge.backend.auth.service.impl.AuthServiceImplTest
+10:56:02.792 [main] INFO com.systemforge.backend.auth.service.impl.AuthServiceImpl -- User registered id=8dc81594-9c4b-471c-ae15-40ae73ac0b97
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.551 s -- in com.systemforge.backend.auth.service.impl.AuthServiceImplTest
+[INFO] Running com.systemforge.backend.notification.service.impl.NotificationServiceImplTest
+10:56:02.997 [main] INFO com.systemforge.backend.notification.service.impl.NotificationServiceImpl -- Dispatching email to=test@example.com subject='Subject'
+10:56:03.014 [main] INFO com.systemforge.backend.notification.service.impl.NotificationServiceImpl -- Dispatching email to=test@example.com subject='Subject'
+10:56:03.015 [main] ERROR com.systemforge.backend.notification.service.impl.NotificationServiceImpl -- Provider dispatch failed for channel EMAIL
+java.lang.RuntimeException: API Timeout
+	at com.systemforge.backend.notification.service.impl.NotificationServiceImpl.dispatch(NotificationServiceImpl.java:109)
+	at com.systemforge.backend.notification.service.impl.NotificationServiceImpl.sendEmail(NotificationServiceImpl.java:50)
+	at com.systemforge.backend.notification.service.impl.NotificationServiceImplTest.dispatch_providerThrowsException_setsStatusFailed(NotificationServiceImplTest.java:151)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+10:56:03.068 [main] INFO com.systemforge.backend.notification.service.impl.NotificationServiceImpl -- Dispatching SMS to=+1234567890
+10:56:03.075 [main] INFO com.systemforge.backend.notification.service.impl.NotificationServiceImpl -- Dispatching push notification to deviceToken=device-t...
+10:56:03.076 [main] ERROR com.systemforge.backend.notification.service.impl.NotificationServiceImpl -- No notification provider found for channel: PUSH
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.121 s -- in com.systemforge.backend.notification.service.impl.NotificationServiceImplTest
+[INFO] Running com.systemforge.backend.recommendation.engine.RecommendationEngineTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.053 s -- in com.systemforge.backend.recommendation.engine.RecommendationEngineTest
+[INFO] Running com.systemforge.backend.recommendation.service.impl.RecommendationServiceImplTest
+10:56:03.231 [main] INFO com.systemforge.backend.recommendation.service.impl.RecommendationServiceImpl -- Generating recommendation for appType=SAAS scale=LARGE
+10:56:03.231 [main] INFO com.systemforge.backend.recommendation.service.impl.RecommendationServiceImpl -- Base recommendation generated with 0 modules
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 s -- in com.systemforge.backend.recommendation.service.impl.RecommendationServiceImplTest
+[INFO] Running com.systemforge.backend.system.controller.SystemControllerTest
+10:56:03.516 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.systemforge.backend.system.controller.SystemControllerTest]: SystemControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+10:56:03.926 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.systemforge.backend.SystemForgeApplication for test class com.systemforge.backend.system.controller.SystemControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.12)
+
+2026-03-24 10:56:04.812 [main] [] INFO  c.s.b.s.c.SystemControllerTest - Starting SystemControllerTest using Java 21.0.8 with PID 11676 (started by Rajkishor Murmu in D:\Startup\SystemForge\systemforge-backend)
+2026-03-24 10:56:04.813 [main] [] DEBUG c.s.b.s.c.SystemControllerTest - Running with Spring Boot v3.5.12, Spring v6.2.17
+2026-03-24 10:56:04.813 [main] [] INFO  c.s.b.s.c.SystemControllerTest - No active profile set, falling back to 1 default profile: "default"
+2026-03-24 10:56:05.890 [main] [] INFO  o.s.b.f.s.DefaultListableBeanFactory - Overriding bean definition for bean 'jsonComponentModule' with a different definition: replacing [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration; factoryMethodName=jsonComponentModule; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [org/springframework/boot/autoconfigure/jackson/JacksonAutoConfiguration.class]] with [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration; factoryMethodName=jsonComponentModule; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [org/springframework/boot/jackson/autoconfigure/JacksonAutoConfiguration.class]]
+2026-03-24 10:56:06.241 [main] [] WARN  o.s.w.c.s.GenericWebApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtAuthenticationFilter' defined in file [D:\Startup\SystemForge\systemforge-backend\target\classes\com\systemforge\backend\auth\filter\JwtAuthenticationFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.systemforge.backend.auth.service.JwtService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+
+
+
+=======================
+=====
+CONDITIONS EVALUATION 
+REPORT
+=======================
+=====
+
+
+Positive matches:
+-----------------
+
+   ErrorMvcAutoConfigur
+ation matched:
+      - 
+@ConditionalOnClass 
+found required classes 
+'jakarta.servlet.Servle
+t', 'org.springframewor
+k.web.servlet.Dispatche
+rServlet' 
+(OnClassCondition)
+      - found 
+'session' scope (OnWebA
+pplicationCondition)
+
+   ErrorMvcAutoConfigur
+ation#basicErrorControl
+ler matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.boot.we
+b.servlet.error.ErrorCo
+ntroller; 
+SearchStrategy: 
+current) did not find 
+any beans 
+(OnBeanCondition)
+
+   ErrorMvcAutoConfigur
+ation#errorAttributes 
+matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.boot.we
+b.servlet.error.ErrorAt
+tributes; 
+SearchStrategy: 
+current) did not find 
+any beans 
+(OnBeanCondition)
+
+   ErrorMvcAutoConfigur
+ation.WhitelabelErrorVi
+ewConfiguration 
+matched:
+      - @ConditionalOnB
+ooleanProperty (server.
+error.whitelabel.enable
+d=true) matched 
+(OnPropertyCondition)
+      - ErrorTemplate 
+Missing did not find 
+error template view (Er
+rorMvcAutoConfiguration
+.ErrorTemplateMissingCo
+ndition)
+
+   ErrorMvcAutoConfigur
+ation.WhitelabelErrorVi
+ewConfiguration#beanNam
+eViewResolver matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.ser
+vlet.view.BeanNameViewR
+esolver; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   ErrorMvcAutoConfigur
+ation.WhitelabelErrorVi
+ewConfiguration#default
+ErrorView matched:
+      - @ConditionalOnM
+issingBean (names: 
+error; SearchStrategy: 
+all) did not find any 
+beans (OnBeanCondition)
+
+   HttpEncodingAutoConf
+iguration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.web.
+filter.CharacterEncodin
+gFilter' 
+(OnClassCondition)
+      - found 
+'session' scope (OnWebA
+pplicationCondition)
+      - @ConditionalOnB
+ooleanProperty (server.
+servlet.encoding.enable
+d=true) matched 
+(OnPropertyCondition)
+
+   HttpEncodingAutoConf
+iguration#characterEnco
+dingFilter matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.fil
+ter.CharacterEncodingFi
+lter; SearchStrategy: 
+all) did not find any 
+beans (OnBeanCondition)
+
+   HttpMessageConverter
+sAutoConfiguration 
+matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.http
+.converter.HttpMessageC
+onverter' 
+(OnClassCondition)
+      - 
+NoneNestedConditions 0 
+matched 1 did not; 
+NestedCondition on Http
+MessageConvertersAutoCo
+nfiguration.NotReactive
+WebApplicationCondition
+.ReactiveWebApplication
+ did not find reactive 
+web application 
+classes (HttpMessageCon
+vertersAutoConfiguratio
+n.NotReactiveWebApplica
+tionCondition)
+
+   HttpMessageConverter
+sAutoConfiguration#mess
+ageConverters matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.boot.au
+toconfigure.http.HttpMe
+ssageConverters; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   HttpMessageConverter
+sAutoConfiguration.Stri
+ngHttpMessageConverterC
+onfiguration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.http
+.converter.StringHttpMe
+ssageConverter' 
+(OnClassCondition)
+
+   HttpMessageConverter
+sAutoConfiguration.Stri
+ngHttpMessageConverterC
+onfiguration#stringHttp
+MessageConverter 
+matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.http.co
+nverter.StringHttpMessa
+geConverter; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   org.springframework.
+boot.autoconfigure.jack
+son.JacksonAutoConfigur
+ation matched:
+      - 
+@ConditionalOnClass 
+found required class 'c
+om.fasterxml.jackson.da
+tabind.ObjectMapper' 
+(OnClassCondition)
+
+   org.springframework.
+boot.jackson.autoconfig
+ure.JacksonAutoConfigur
+ation matched:
+      - 
+@ConditionalOnClass 
+found required class 't
+ools.jackson.databind.j
+son.JsonMapper' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion#jacksonJsonMapper 
+matched:
+      - @ConditionalOnM
+issingBean (types: tool
+s.jackson.databind.json
+.JsonMapper; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   JacksonAutoConfigura
+tion#jsonMapperBuilder 
+matched:
+      - @ConditionalOnM
+issingBean (types: tool
+s.jackson.databind.json
+.JsonMapper$Builder; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   JacksonAutoConfigura
+tion.Jackson2ObjectMapp
+erBuilderCustomizerConf
+iguration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.http
+.converter.json.Jackson
+2ObjectMapperBuilder' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion.JacksonObjectMappe
+rBuilderConfiguration 
+matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.http
+.converter.json.Jackson
+2ObjectMapperBuilder' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion.JacksonObjectMappe
+rBuilderConfiguration#j
+acksonObjectMapperBuild
+er matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.http.co
+nverter.json.Jackson2Ob
+jectMapperBuilder; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   JacksonAutoConfigura
+tion.JacksonObjectMappe
+rConfiguration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.http
+.converter.json.Jackson
+2ObjectMapperBuilder' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion.JacksonObjectMappe
+rConfiguration#jacksonO
+bjectMapper matched:
+      - @ConditionalOnM
+issingBean (types: com.
+fasterxml.jackson.datab
+ind.ObjectMapper; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   JacksonAutoConfigura
+tion.JsonProblemDetails
+Configuration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.http
+.ProblemDetail' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion.ParameterNamesModu
+leConfiguration 
+matched:
+      - 
+@ConditionalOnClass 
+found required class 'c
+om.fasterxml.jackson.mo
+dule.paramnames.Paramet
+erNamesModule' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion.ParameterNamesModu
+leConfiguration#paramet
+erNamesModule matched:
+      - @ConditionalOnM
+issingBean (types: com.
+fasterxml.jackson.modul
+e.paramnames.ParameterN
+amesModule; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   JacksonHttpMessageCo
+nvertersConfiguration.M
+appingJackson2HttpMessa
+geConverterConfiguratio
+n matched:
+      - 
+@ConditionalOnClass 
+found required class 'c
+om.fasterxml.jackson.da
+tabind.ObjectMapper' 
+(OnClassCondition)
+      - @ConditionalOnP
+referredJsonMapper 
+JACKSON no property 
+was configured and 
+Jackson is the default 
+(OnPreferredJsonMapperC
+ondition)
+      - 
+@ConditionalOnBean 
+(types: com.fasterxml.j
+ackson.databind.ObjectM
+apper; SearchStrategy: 
+all) found bean 
+'jacksonObjectMapper' 
+(OnBeanCondition)
+
+   JacksonHttpMessageCo
+nvertersConfiguration.M
+appingJackson2HttpMessa
+geConverterConfiguratio
+n#mappingJackson2HttpMe
+ssageConverter matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.http.co
+nverter.json.MappingJac
+kson2HttpMessageConvert
+er ignored: org.springf
+ramework.hateoas.server
+.mvc.TypeConstrainedMap
+pingJackson2HttpMessage
+Converter,org.springfra
+mework.data.rest.webmvc
+.alps.AlpsJsonHttpMessa
+geConverter; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   MockMvcAutoConfigura
+tion matched:
+      - found 
+'session' scope (OnWebA
+pplicationCondition)
+
+   MockMvcAutoConfigura
+tion#dispatcherServlet 
+matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.ser
+vlet.DispatcherServlet;
+ SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   MockMvcAutoConfigura
+tion#dispatcherServletP
+ath matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.boot.au
+toconfigure.web.servlet
+.DispatcherServletPath;
+ SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   MockMvcConfiguration
+#mockMvc matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.test.we
+b.servlet.MockMvc; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   MockMvcConfiguration
+#mockMvcBuilder 
+matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.test.we
+b.servlet.MockMvcBuilde
+r; SearchStrategy: 
+all) did not find any 
+beans (OnBeanCondition)
+
+   MockMvcSecurityConfi
+guration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.secu
+rity.test.web.servlet.r
+equest.SecurityMockMvcR
+equestPostProcessors' 
+(OnClassCondition)
+
+   MockMvcTesterConfigu
+ration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.assertj.core.api.Ass
+ert' (OnClassCondition)
+
+   MockMvcTesterConfigu
+ration#mockMvcTester 
+matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.test.we
+b.servlet.assertj.MockM
+vcTester; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   
+NoOpCacheConfiguration 
+matched:
+      - Cache org.sprin
+gframework.boot.autocon
+figure.cache.NoOpCacheC
+onfiguration NONE 
+cache type 
+(CacheCondition)
+
+   SecurityFilterAutoCo
+nfiguration matched:
+      - 
+@ConditionalOnClass 
+found required classes 
+'org.springframework.se
+curity.web.context.Abst
+ractSecurityWebApplicat
+ionInitializer', 'org.s
+pringframework.security
+.config.http.SessionCre
+ationPolicy' 
+(OnClassCondition)
+      - found 
+'session' scope (OnWebA
+pplicationCondition)
+
+   SpringDataWebAutoCon
+figuration matched:
+      - 
+@ConditionalOnClass 
+found required classes 
+'org.springframework.da
+ta.web.PageableHandlerM
+ethodArgumentResolver',
+ 'org.springframework.w
+eb.servlet.config.annot
+ation.WebMvcConfigurer'
+ (OnClassCondition)
+      - found 
+'session' scope (OnWebA
+pplicationCondition)
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.data.we
+b.PageableHandlerMethod
+ArgumentResolver; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   SpringDataWebAutoCon
+figuration#pageableCust
+omizer matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.data.we
+b.config.PageableHandle
+rMethodArgumentResolver
+Customizer; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   SpringDataWebAutoCon
+figuration#sortCustomiz
+er matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.data.we
+b.config.SortHandlerMet
+hodArgumentResolverCust
+omizer; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   SpringDataWebAutoCon
+figuration#springDataWe
+bSettings matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.data.we
+b.config.SpringDataWebS
+ettings; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   TaskExecutionAutoCon
+figuration matched:
+      - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.sche
+duling.concurrent.Threa
+dPoolTaskExecutor' 
+(OnClassCondition)
+
+   TaskExecutorConfigur
+ations.AsyncConfigurerC
+onfiguration matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.schedul
+ing.annotation.AsyncCon
+figurer; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   TaskExecutorConfigur
+ations.AsyncConfigurerC
+onfiguration#applicatio
+nTaskExecutorAsyncConfi
+gurer matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.schedul
+ing.annotation.AsyncCon
+figurer; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   TaskExecutorConfigur
+ations.SimpleAsyncTaskE
+xecutorBuilderConfigura
+tion#simpleAsyncTaskExe
+cutorBuilder matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.boot.ta
+sk.SimpleAsyncTaskExecu
+torBuilder; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+      - @ConditionalOnT
+hreading found 
+PLATFORM 
+(OnThreadingCondition)
+
+   TaskExecutorConfigur
+ations.TaskExecutorConf
+iguration matched:
+      - 
+AnyNestedCondition 1 
+matched 1 did not; 
+NestedCondition on Task
+ExecutorConfigurations.
+OnExecutorCondition.Mod
+elCondition 
+@ConditionalOnProperty 
+(spring.task.execution.
+mode=force) did not 
+find property 'spring.t
+ask.execution.mode'; 
+NestedCondition on Task
+ExecutorConfigurations.
+OnExecutorCondition.Exe
+cutorBeanCondition @Con
+ditionalOnMissingBean 
+(types: java.util.concu
+rrent.Executor; 
+SearchStrategy: all) 
+did not find any beans 
+(TaskExecutorConfigurat
+ions.OnExecutorConditio
+n)
+
+   TaskExecutorConfigur
+ations.TaskExecutorConf
+iguration#applicationTa
+skExecutor matched:
+      - @ConditionalOnT
+hreading found 
+PLATFORM 
+(OnThreadingCondition)
+
+   TaskExecutorConfigur
+ations.ThreadPoolTaskEx
+ecutorBuilderConfigurat
+ion#threadPoolTaskExecu
+torBuilder matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.boot.ta
+sk.ThreadPoolTaskExecut
+orBuilder; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   ValidationAutoConfig
+uration matched:
+      - 
+@ConditionalOnClass 
+found required class 'j
+akarta.validation.execu
+table.ExecutableValidat
+or' (OnClassCondition)
+      - 
+@ConditionalOnResource 
+found location classpat
+h:META-INF/services/jak
+arta.validation.spi.Val
+idationProvider 
+(OnResourceCondition)
+
+   ValidationAutoConfig
+uration#defaultValidato
+r matched:
+      - @ConditionalOnM
+issingBean (types: jaka
+rta.validation.Validato
+r; SearchStrategy: 
+all) did not find any 
+beans (OnBeanCondition)
+
+   ValidationAutoConfig
+uration#methodValidatio
+nPostProcessor matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.validat
+ion.beanvalidation.Meth
+odValidationPostProcess
+or; SearchStrategy: 
+current) did not find 
+any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion matched:
+      - 
+@ConditionalOnClass 
+found required classes 
+'jakarta.servlet.Servle
+t', 'org.springframewor
+k.web.servlet.Dispatche
+rServlet', 'org.springf
+ramework.web.servlet.co
+nfig.annotation.WebMvcC
+onfigurer' 
+(OnClassCondition)
+      - found 
+'session' scope (OnWebA
+pplicationCondition)
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.ser
+vlet.config.annotation.
+WebMvcConfigurationSupp
+ort; SearchStrategy: 
+all) did not find any 
+beans (OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion#formContentFilter 
+matched:
+      - @ConditionalOnB
+ooleanProperty (spring.
+mvc.formcontent.filter.
+enabled=true) matched 
+(OnPropertyCondition)
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.fil
+ter.FormContentFilter; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.EnableWebMvcConfigu
+ration#flashMapManager 
+matched:
+      - @ConditionalOnM
+issingBean (names: 
+flashMapManager; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.EnableWebMvcConfigu
+ration#localeResolver 
+matched:
+      - @ConditionalOnM
+issingBean (names: 
+localeResolver; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.EnableWebMvcConfigu
+ration#themeResolver 
+matched:
+      - @ConditionalOnM
+issingBean (names: 
+themeResolver; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.EnableWebMvcConfigu
+ration#viewNameTranslat
+or matched:
+      - @ConditionalOnM
+issingBean (names: 
+viewNameTranslator; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.ResourceChainCustom
+izerConfiguration 
+matched:
+      - @ConditionalOnE
+nabledResourceChain 
+found class org.webjars
+.WebJarVersionLocator (
+OnEnabledResourceChainC
+ondition)
+
+   WebMvcAutoConfigurat
+ion.WebMvcAutoConfigura
+tionAdapter#defaultView
+Resolver matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.ser
+vlet.view.InternalResou
+rceViewResolver; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.WebMvcAutoConfigura
+tionAdapter#requestCont
+extFilter matched:
+      - @ConditionalOnM
+issingBean (types: org.
+springframework.web.con
+text.request.RequestCon
+textListener,org.spring
+framework.web.filter.Re
+questContextFilter; 
+SearchStrategy: all) 
+did not find any beans 
+(OnBeanCondition)
+
+   WebMvcAutoConfigurat
+ion.WebMvcAutoConfigura
+tionAdapter#viewResolve
+r matched:
+      - 
+@ConditionalOnBean 
+(types: org.springframe
+work.web.servlet.ViewRe
+solver; 
+SearchStrategy: all) 
+found beans 
+'defaultViewResolver', 
+'beanNameViewResolver',
+ 'mvcViewResolver'; @Co
+nditionalOnMissingBean 
+(names: viewResolver 
+types: org.springframew
+ork.web.servlet.view.Co
+ntentNegotiatingViewRes
+olver; SearchStrategy: 
+all) did not find any 
+beans (OnBeanCondition)
+
+
+Negative matches:
+-----------------
+
+   Cache2kCacheConfigur
+ation:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.cache2k.Cach
+e2kBuilder' 
+(OnClassCondition)
+
+   
+CacheAutoConfiguration:
+      Did not match:
+         - 
+@ConditionalOnBean 
+(types: org.springframe
+work.cache.interceptor.
+CacheAspectSupport; 
+SearchStrategy: all) 
+did not find any beans 
+of type org.springframe
+work.cache.interceptor.
+CacheAspectSupport 
+(OnBeanCondition)
+      Matched:
+         - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.cach
+e.CacheManager' 
+(OnClassCondition)
+
+   CacheAutoConfigurati
+on.CacheManagerEntityMa
+nagerFactoryDependsOnPo
+stProcessor:
+      Did not match:
+         - Ancestor org
+.springframework.boot.a
+utoconfigure.cache.Cach
+eAutoConfiguration did 
+not match (ConditionEva
+luationReport.Ancestors
+MatchedCondition)
+      Matched:
+         - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.orm.
+jpa.LocalContainerEntit
+yManagerFactoryBean' 
+(OnClassCondition)
+
+   CaffeineCacheConfigu
+ration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'com.github.benma
+nes.caffeine.cache.Caff
+eine' 
+(OnClassCondition)
+
+   CouchbaseCacheConfig
+uration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'com.couchbase.cl
+ient.java.Cluster' 
+(OnClassCondition)
+
+   ErrorMvcAutoConfigur
+ation.DefaultErrorViewR
+esolverConfiguration#co
+nventionErrorViewResolv
+er:
+      Did not match:
+         - 
+@ConditionalOnBean 
+(types: org.springframe
+work.web.servlet.Dispat
+cherServlet; 
+SearchStrategy: all) 
+did not find any beans 
+of type org.springframe
+work.web.servlet.Dispat
+cherServlet 
+(OnBeanCondition)
+
+   FreeMarkerAutoConfig
+uration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'freemarker.templ
+ate.Configuration' 
+(OnClassCondition)
+
+   GenericCacheConfigur
+ation:
+      Did not match:
+         - Cache org.sp
+ringframework.boot.auto
+configure.cache.Generic
+CacheConfiguration 
+unknown cache type 
+(CacheCondition)
+
+   GroovyTemplateAutoCo
+nfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'groovy.text.mark
+up.MarkupTemplateEngine
+' (OnClassCondition)
+
+   
+GsonAutoConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 
+'com.google.gson.Gson' 
+(OnClassCondition)
+
+   GsonHttpMessageConve
+rtersConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 
+'com.google.gson.Gson' 
+(OnClassCondition)
+
+   HazelcastCacheConfig
+uration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'com.hazelcast.co
+re.HazelcastInstance' 
+(OnClassCondition)
+
+   HypermediaAutoConfig
+uration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.hateoas.EntityModel
+' (OnClassCondition)
+
+   InfinispanCacheConfi
+guration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.infinispan.s
+pring.embedded.provider
+.SpringEmbeddedCacheMan
+ager' 
+(OnClassCondition)
+
+   JCacheCacheConfigura
+tion:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 
+'javax.cache.Caching' 
+(OnClassCondition)
+
+   JacksonAutoConfigura
+tion.CborConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'tools.jackson.da
+taformat.cbor.CBORMappe
+r' (OnClassCondition)
+
+   JacksonAutoConfigura
+tion.XmlConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'tools.jackson.da
+taformat.xml.XmlMapper'
+ (OnClassCondition)
+
+   JacksonHttpMessageCo
+nvertersConfiguration.M
+appingJackson2XmlHttpMe
+ssageConverterConfigura
+tion:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'com.fasterxml.ja
+ckson.dataformat.xml.Xm
+lMapper' 
+(OnClassCondition)
+
+   
+JsonbAutoConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'jakarta.json.bin
+d.Jsonb' 
+(OnClassCondition)
+
+   JsonbHttpMessageConv
+ertersConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'jakarta.json.bin
+d.Jsonb' 
+(OnClassCondition)
+
+   MessageSourceAutoCon
+figuration:
+      Did not match:
+         - 
+ResourceBundle did not 
+find bundle with 
+basename messages (Mess
+ageSourceAutoConfigurat
+ion.ResourceBundleCondi
+tion)
+
+   MockMvcAutoConfigura
+tion.WebTestClientMockM
+vcConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.web.reactive.functi
+on.client.WebClient' 
+(OnClassCondition)
+
+   MockMvcSecurityConfi
+guration#securityMockMv
+cBuilderCustomizer:
+2026-03-24 10:56:06.525 [main] [] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-03-24 10:56:06.566 [main] [] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.systemforge.backend.auth.filter.JwtAuthenticationFilter required a bean of type 'com.systemforge.backend.auth.service.JwtService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.systemforge.backend.auth.service.JwtService' in your configuration.
+
+2026-03-24 10:56:06.574 [main] [] WARN  o.s.test.context.TestContextManager - Caught exception while allowing TestExecutionListener [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener] to prepare test instance [com.systemforge.backend.system.controller.SystemControllerTest@b5ff70b]
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:128)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:112)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:69)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:383)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:388)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:382)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:382)
+      Did not match:
+         - 
+@ConditionalOnBean 
+(names: springSecurityF
+ilterChain; 
+SearchStrategy: all) 
+did not find any beans 
+named springSecurityFil
+terChain 
+(OnBeanCondition)
+
+   MockMvcWebClientAuto
+Configuration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.htmlunit.Web
+Client' 
+(OnClassCondition)
+
+   MockMvcWebDriverAuto
+Configuration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.openqa.selen
+ium.htmlunit.HtmlUnitDr
+iver' 
+(OnClassCondition)
+
+   MustacheAutoConfigur
+ation:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'com.samskivert.m
+ustache.Mustache' 
+(OnClassCondition)
+
+   OAuth2ClientAutoConf
+iguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.security.oauth2.cli
+ent.registration.Client
+Registration' 
+(OnClassCondition)
+
+   OAuth2ClientWebSecur
+ityAutoConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.security.oauth2.cli
+ent.web.OAuth2Authorize
+dClientRepository' 
+(OnClassCondition)
+
+   OAuth2ResourceServer
+AutoConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.security.oauth2.ser
+ver.resource.authentica
+tion.BearerTokenAuthent
+icationToken' 
+(OnClassCondition)
+
+   RedisCacheConfigurat
+ion:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.data.redis.connecti
+on.RedisConnectionFacto
+ry' (OnClassCondition)
+
+   Saml2RelyingPartyAut
+oConfiguration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.security.saml2.prov
+ider.service.registrati
+on.RelyingPartyRegistra
+tionRepository' 
+(OnClassCondition)
+
+   SecurityFilterAutoCo
+nfiguration#securityFil
+terChainRegistration:
+      Did not match:
+         - 
+@ConditionalOnBean 
+(names: springSecurityF
+ilterChain; 
+SearchStrategy: all) 
+did not find any beans 
+named springSecurityFil
+terChain 
+(OnBeanCondition)
+
+   SimpleCacheConfigura
+tion:
+      Did not match:
+         - Cache org.sp
+ringframework.boot.auto
+configure.cache.SimpleC
+acheConfiguration 
+unknown cache type 
+(CacheCondition)
+
+   TaskExecutorConfigur
+ations.SimpleAsyncTaskE
+xecutorBuilderConfigura
+tion#simpleAsyncTaskExe
+cutorBuilderVirtualThre
+ads:
+      Did not match:
+         - @Conditional
+OnMissingBean (types: o
+rg.springframework.boot
+.task.SimpleAsyncTaskEx
+ecutorBuilder; 
+SearchStrategy: all) 
+found beans of type 'or
+g.springframework.boot.
+task.SimpleAsyncTaskExe
+cutorBuilder' simpleAsy
+ncTaskExecutorBuilder 
+(OnBeanCondition)
+
+   TaskExecutorConfigur
+ations.TaskExecutorConf
+iguration#applicationTa
+skExecutorVirtualThread
+s:
+      Did not match:
+         - @Conditional
+OnThreading did not 
+find VIRTUAL 
+(OnThreadingCondition)
+
+   ThymeleafAutoConfigu
+ration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.thymeleaf.sp
+ring6.SpringTemplateEng
+ine' (OnClassCondition)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:293)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:292)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:281)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:280)
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:112)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:111)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtAuthenticationFilter' defined in file [D:\Startup\SystemForge\systemforge-backend\target\classes\com\systemforge\backend\auth\filter\JwtAuthenticationFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.systemforge.backend.auth.service.JwtService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804)
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:240)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1395)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1232)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1228)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1130)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:991)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:628)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:151)
+
+   UserDetailsServiceAu
+toConfiguration:
+      Did not match:
+         - 
+@ConditionalOnBean 
+(types: org.springframe
+work.security.config.Ob
+jectPostProcessor; 
+SearchStrategy: all) 
+did not find any beans 
+of type org.springframe
+work.security.config.Ob
+jectPostProcessor 
+(OnBeanCondition)
+      Matched:
+         - 
+@ConditionalOnClass 
+found required class 'o
+rg.springframework.secu
+rity.authentication.Aut
+henticationManager' 
+(OnClassCondition)
+         - found 
+'session' scope (OnWebA
+pplicationCondition)
+         - 
+AnyNestedCondition 1 
+matched 2 did not; 
+NestedCondition on User
+DetailsServiceAutoConfi
+guration.MissingAlterna
+tiveOrUserPropertiesCon
+figured.PasswordConfigu
+red 
+@ConditionalOnProperty 
+(spring.security.user.p
+assword) did not find 
+property 'spring.securi
+ty.user.password'; 
+NestedCondition on User
+DetailsServiceAutoConfi
+guration.MissingAlterna
+tiveOrUserPropertiesCon
+figured.NameConfigured 
+@ConditionalOnProperty 
+(spring.security.user.n
+ame) did not find 
+property 'spring.securi
+ty.user.name'; 
+NestedCondition on User
+DetailsServiceAutoConfi
+guration.MissingAlterna
+tiveOrUserPropertiesCon
+figured.MissingAlternat
+ive @ConditionalOnMissi
+ngClass did not find 
+unwanted classes 'org.s
+pringframework.security
+.oauth2.client.registra
+tion.ClientRegistration
+Repository', 'org.sprin
+gframework.security.oau
+th2.server.resource.int
+rospection.OpaqueTokenI
+ntrospector', 'org.spri
+ngframework.security.sa
+ml2.provider.service.re
+gistration.RelyingParty
+RegistrationRepository'
+ (UserDetailsServiceAut
+oConfiguration.MissingA
+lternativeOrUserPropert
+iesConfigured)
+
+   WebMvcAutoConfigurat
+ion#hiddenHttpMethodFil
+ter:
+      Did not match:
+         - @Conditional
+OnBooleanProperty (spri
+ng.mvc.hiddenmethod.fil
+ter.enabled=true) did 
+not find property 'spri
+ng.mvc.hiddenmethod.fil
+ter.enabled' 
+(OnPropertyCondition)
+
+   WebMvcAutoConfigurat
+ion.ProblemDetailsError
+HandlingConfiguration:
+      Did not match:
+         - @Conditional
+OnBooleanProperty (spri
+ng.mvc.problemdetails.e
+nabled=true) did not 
+find property 'spring.m
+vc.problemdetails.enabl
+ed' 
+(OnPropertyCondition)
+
+   WebMvcAutoConfigurat
+ion.WebMvcAutoConfigura
+tionAdapter#beanNameVie
+wResolver:
+      Did not match:
+         - @Conditional
+OnMissingBean (types: o
+rg.springframework.web.
+servlet.view.BeanNameVi
+ewResolver; 
+SearchStrategy: all) 
+found beans of type 'or
+g.springframework.web.s
+ervlet.view.BeanNameVie
+wResolver' 
+beanNameViewResolver 
+(OnBeanCondition)
+
+   WebTestClientAutoCon
+figuration:
+      Did not match:
+         - 
+@ConditionalOnClass 
+did not find required 
+class 'org.springframew
+ork.web.reactive.functi
+on.client.WebClient' 
+(OnClassCondition)
+
+
+Exclusions:
+-----------
+
+    org.springframework
+.boot.autoconfigure.sec
+urity.servlet.SecurityA
+utoConfiguration
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46)
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1461)
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:590)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:151)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:110)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152)
+	... 81 common frames omitted
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.systemforge.backend.auth.service.JwtService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2315)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1733)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1653)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:913)
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791)
+	... 107 common frames omitted
+2026-03-24 10:56:06.593 [main] [] WARN  o.s.test.context.TestContextManager - Caught exception while allowing TestExecutionListener [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener] to prepare test instance [com.systemforge.backend.system.controller.SystemControllerTest@5ba63110]
+java.lang.IllegalStateException: ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:145)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:128)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:112)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:69)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:383)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:388)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:382)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:382)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:293)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:292)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:281)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:280)
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:112)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:111)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-03-24 10:56:06.602 [main] [] WARN  o.s.test.context.TestContextManager - Caught exception while allowing TestExecutionListener [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener] to prepare test instance [com.systemforge.backend.system.controller.SystemControllerTest@11dbcb3b]
+java.lang.IllegalStateException: ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:145)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:128)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:112)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:69)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:383)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:388)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:382)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:382)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:293)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:292)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:281)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:280)
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:27)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:112)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:111)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:128)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+[ERROR] Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 3.306 s <<< FAILURE! -- in com.systemforge.backend.system.controller.SystemControllerTest
+[ERROR] com.systemforge.backend.system.controller.SystemControllerTest.generateArchitecture_success_returnsPayload -- Time elapsed: 0.004 s <<< ERROR!
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:128)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:112)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:69)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtAuthenticationFilter' defined in file [D:\Startup\SystemForge\systemforge-backend\target\classes\com\systemforge\backend\auth\filter\JwtAuthenticationFilter.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.systemforge.backend.auth.service.JwtService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804)
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:240)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1395)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1232)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1228)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1194)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1130)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:991)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:628)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318)
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:151)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46)
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1461)
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:590)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:151)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:110)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152)
+	... 20 more
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.systemforge.backend.auth.service.JwtService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:2315)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1733)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1653)
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:913)
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791)
+	... 46 more
+
+[ERROR] com.systemforge.backend.system.controller.SystemControllerTest.getAllSystems_returnsOk -- Time elapsed: 0.001 s <<< ERROR!
+java.lang.IllegalStateException: ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:145)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:128)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:112)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:69)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] com.systemforge.backend.system.controller.SystemControllerTest.createConfig_success_returnsCreated -- Time elapsed: 0.001 s <<< ERROR!
+java.lang.IllegalStateException: ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:145)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:128)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:112)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:69)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:260)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:159)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] Running com.systemforge.backend.system.service.impl.SystemServiceImplTest
+2026-03-24 10:56:07.048 [main] [] INFO  c.s.b.s.s.impl.SystemServiceImpl - Triggering architecture generation for config: ba04ba39-9c73-41f9-b554-38e03ab27b88, user: c30328f6-f10a-468c-8871-24b605c253a1
+2026-03-24 10:56:07.051 [main] [] ERROR c.s.b.s.s.impl.SystemServiceImpl - Failed to serialize AI recommendation result
+com.systemforge.backend.system.service.impl.SystemServiceImplTest$1: Simulation failure
+	at com.fasterxml.jackson.databind.ObjectMapper.writeValueAsString(ObjectMapper.java:4085)
+	at com.systemforge.backend.system.service.impl.SystemServiceImpl.generateArchitecture(SystemServiceImpl.java:115)
+	at com.systemforge.backend.system.service.impl.SystemServiceImplTest.lambda$generateArchitecture_jsonFailure_throwsException$2(SystemServiceImplTest.java:222)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3128)
+	at com.systemforge.backend.system.service.impl.SystemServiceImplTest.generateArchitecture_jsonFailure_throwsException(SystemServiceImplTest.java:222)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2026-03-24 10:56:07.064 [main] [] INFO  c.s.b.s.s.impl.SystemServiceImpl - Triggering architecture generation for config: 8950510b-da03-4842-8a6d-e50bc8fad170, user: bb515656-1c99-40a2-bff9-6daf3200584c
+2026-03-24 10:56:07.069 [main] [] INFO  c.s.b.s.s.impl.SystemServiceImpl - Deleting config: e1221e4b-4fa5-45fb-b424-378c7833d8a4 for user: d9cf65ef-d028-41aa-991b-8677ebde0147
+2026-03-24 10:56:07.145 [main] [] INFO  c.s.b.s.s.impl.SystemServiceImpl - Creating new system config for user: cc6f5bce-e1d2-4d6e-a391-3c140ef0869b
+2026-03-24 10:56:07.155 [main] [] INFO  c.s.b.s.s.impl.SystemServiceImpl - Triggering architecture generation for config: ea2c4c4c-d8b7-42f2-b78d-0566c87fb169, user: 786483bb-1555-45ba-98f4-adf80a7b7996
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.543 s -- in com.systemforge.backend.system.service.impl.SystemServiceImplTest
+[INFO] Running com.systemforge.backend.SystemforgeApplicationTests
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.systemforge.backend.SystemforgeApplicationTests
+[INFO] Running com.systemforge.backend.template.service.impl.TemplateServiceImplTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.systemforge.backend.template.service.impl.TemplateServiceImplTest
+[INFO] Running com.systemforge.backend.user.service.impl.UserServiceImplTest
+2026-03-24 10:56:07.247 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Soft-deleting user id=5dc5d741-8d83-48f2-82f1-17e469c84687
+2026-03-24 10:56:07.248 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - User soft-deleted id=5dc5d741-8d83-48f2-82f1-17e469c84687
+2026-03-24 10:56:07.287 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Changing password for user id=5783bf7c-b83b-4080-99c1-683cd83408ca
+2026-03-24 10:56:07.287 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Password updated successfully for user id=5783bf7c-b83b-4080-99c1-683cd83408ca
+2026-03-24 10:56:07.292 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Changing password for user id=386ecbe9-3ea9-46c7-9d67-6f105c6db23b
+2026-03-24 10:56:07.297 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Updating profile for user id=82b95f8e-4c1b-497d-9aac-f17eb097889b
+2026-03-24 10:56:07.302 [main] [] DEBUG c.s.b.u.service.impl.UserServiceImpl - Fetching users page=0 size=10
+2026-03-24 10:56:07.305 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Soft-deleting user id=13f2e005-fb6b-431b-80fe-d1b16848017b
+2026-03-24 10:56:07.307 [main] [] WARN  c.s.b.u.service.impl.UserServiceImpl - User already deleted id=13f2e005-fb6b-431b-80fe-d1b16848017b
+2026-03-24 10:56:07.310 [main] [] DEBUG c.s.b.u.service.impl.UserServiceImpl - Fetching current user id=f9a8700d-478c-4c57-a2bc-6c066cc510fa
+2026-03-24 10:56:07.314 [main] [] DEBUG c.s.b.u.service.impl.UserServiceImpl - Fetching user by email=test@example.com
+2026-03-24 10:56:07.317 [main] [] DEBUG c.s.b.u.service.impl.UserServiceImpl - Fetching user by id=d7285080-8758-4679-83dd-20784cf6641d
+2026-03-24 10:56:07.320 [main] [] DEBUG c.s.b.u.service.impl.UserServiceImpl - Fetching user by id=9e130d81-e780-4fa7-8f6c-0c59419bdf27
+2026-03-24 10:56:07.324 [main] [] INFO  c.s.b.u.service.impl.UserServiceImpl - Changing password for user id=1a1ee0fe-aa68-4de8-87dc-2b78b1f83184
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.089 s -- in com.systemforge.backend.user.service.impl.UserServiceImplTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   SystemControllerTest.createConfig_success_returnsCreated ╗ IllegalState ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+[ERROR]   SystemControllerTest.generateArchitecture_success_returnsPayload ╗ IllegalState Failed to load ApplicationContext for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+[ERROR]   SystemControllerTest.getAllSystems_returnsOk ╗ IllegalState ApplicationContext failure threshold (1) exceeded: skipping repeated attempt to load context for [WebMergedContextConfiguration@51297528 testClass = com.systemforge.backend.system.controller.SystemControllerTest, locations = [], classes = [com.systemforge.backend.SystemForgeApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.web.server.context.SpringBootTestRandomPortContextCustomizer@3d20e575, [ImportsContextCustomizer@1df9f7c6 key = [org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientWebSecurityAutoConfiguration, org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.HttpEncodingAutoConfiguration, org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration, org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration, org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration, org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration, org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration, org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration, org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration, org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration, org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.autoconfigure.groovy.template.GroovyTemplateAutoConfiguration, org.springframework.boot.autoconfigure.mustache.MustacheAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@414f87a9, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@2eda072, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@69b91af4, org.springframework.boot.test.web.reactor.netty.DisableReactorResourceFactoryGlobalResourcesContextCustomizerFactory$DisableReactorResourceFactoryGlobalResourcesContextCustomizerCustomizer@69aa7d76, org.springframework.boot.test.autoconfigure.OnFailureConditionReportContextCustomizerFactory$OnFailureConditionReportContextCustomizer@3913f206, org.springframework.boot.test.autoconfigure.OverrideAutoConfigurationContextCustomizerFactory$DisableAutoConfigurationContextCustomizer@41ccb3b9, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.filter.TypeExcludeFiltersContextCustomizer@b439ef4b, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@3b7349c5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@59edb4f5, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@0, org.springframework.boot.test.context.SpringBootTestAnnotation@4c69855d], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+[INFO] 
+[ERROR] Tests run: 52, Failures: 0, Errors: 3, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  15.134 s
+[INFO] Finished at: 2026-03-24T10:56:07+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.5:test (default-test) on project systemforge-backend: 
+[ERROR] 
+[ERROR] See D:\Startup\SystemForge\systemforge-backend\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
