@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PlusSquare, History, Network, Sliders, Book, Activity, Cpu, Layers, MessageSquare } from 'lucide-react';
+import { PlusSquare, History, Network, Sliders, Book, Activity, Cpu, Layers, MessageSquare, ShieldAlert } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '@/lib/auth-context';
 
 const mainNavItems = [
   { name: 'New Session', href: '/create', icon: PlusSquare },
@@ -21,6 +22,7 @@ const bottomNavItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <aside className="hidden md:flex flex-col h-full py-6 bg-[#090e1c]/95 backdrop-blur-xl border-r border-outline-variant/10 w-64 shrink-0 fixed left-0 top-16 bottom-0 z-40 shadow-[4px_0_24px_rgba(0,0,0,0.2)]">
@@ -66,6 +68,29 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Admin Link */}
+        {user?.role === 'ADMIN' && (
+          <Link 
+            href="/admin" 
+            className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg font-label uppercase text-[11px] tracking-widest font-bold transition-all duration-300 overflow-hidden mt-4 ${
+              pathname === '/admin' 
+                ? 'text-red-400 bg-red-400/10 border border-red-500/20' 
+                : 'text-red-400/60 hover:text-red-400 hover:bg-red-400/5 hover:border hover:border-red-500/10'
+            }`}
+          >
+            {pathname === '/admin' && (
+              <motion.div 
+                layoutId="sidebar-active-indicator"
+                className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 shadow-[0_0_10px_#ef4444] rounded-r-full"
+                initial={false}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+            <ShieldAlert className={`w-4 h-4 transition-transform duration-300 ${pathname === '/admin' ? 'scale-110' : 'group-hover:scale-110'}`} />
+            <span className="relative z-10">Admin Console</span>
+          </Link>
+        )}
       </nav>
 
       <div className="px-4 mt-auto space-y-4">

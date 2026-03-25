@@ -33,4 +33,7 @@ public interface AdminService {
 
     /** Changes a user's role (e.g., DEVELOPER → ADMIN). Requires ADMIN authority. */
     UserResponse changeUserRole(UUID userId, String newRole);
+
+    /** Retrieves a paginated list of all users. */
+    org.springframework.data.domain.Page<UserResponse> getAllUsers(org.springframework.data.domain.Pageable pageable);
 }

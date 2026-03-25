@@ -54,4 +54,17 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("User role updated",
                 adminService.changeUserRole(userId, role)));
     }
+
+    @GetMapping("/users")
+    @Operation(summary = "List all users", description = "Returns a paginated list of all registered users")
+    public ResponseEntity<ApiResponse<com.systemforge.backend.common.dto.PagedResponse<UserResponse>>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        org.springframework.data.domain.Page<UserResponse> users = adminService.getAllUsers(
+                org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by("createdAt").descending()));
+        
+        return ResponseEntity.ok(ApiResponse.success("Users retrieved",
+                com.systemforge.backend.common.dto.PagedResponse.from(users, dto -> dto)));
+    }
 }

@@ -116,4 +116,11 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "USR_001", "User not found with id: " + userId));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
+    public org.springframework.data.domain.Page<UserResponse> getAllUsers(org.springframework.data.domain.Pageable pageable) {
+        return userRepository.findAll(pageable).map(userMapper::toDto);
+    }
 }
