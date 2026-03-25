@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PlusSquare, History, Network, Sliders, Book, Activity, Cpu } from 'lucide-react';
+import { PlusSquare, History, Network, Sliders, Book, Activity, Cpu, Layers, MessageSquare } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const mainNavItems = [
   { name: 'New Session', href: '/create', icon: PlusSquare },
   { name: 'Architecture History', href: '/dashboard', icon: History },
+  { name: 'Templates', href: '/templates', icon: Layers },
+  { name: 'AI Chat', href: '/chat', icon: MessageSquare },
   { name: 'Resource Graph', href: '/architecture', icon: Network },
   { name: 'Env Variables', href: '/env', icon: Sliders },
 ];

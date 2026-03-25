@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Brain, Database, Server, Zap, ArrowRight, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 
@@ -30,6 +30,7 @@ const APP_SCALES = [
 
 export default function CreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [configName, setConfigName] = useState('');
   const [prompt, setPrompt] = useState('');
@@ -37,6 +38,16 @@ export default function CreatePage() {
   const [appScale, setAppScale] = useState('SMALL');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pre-fill from template URL params
+  useEffect(() => {
+    const tName = searchParams.get('templateName');
+    const tType = searchParams.get('appType');
+    const tScale = searchParams.get('appScale');
+    if (tName) setConfigName(tName);
+    if (tType && APP_TYPES.some(t => t.value === tType)) setAppType(tType);
+    if (tScale && APP_SCALES.some(s => s.value === tScale)) setAppScale(tScale);
+  }, [searchParams]);
 
   const canSubmit = configName.trim().length >= 3 && prompt.trim().length > 0 && !submitting;
 
