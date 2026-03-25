@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Settings, Bell, Terminal, Menu, LogOut, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '@/lib/auth-context';
+import { NotificationBell } from './notification-bell';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard' },
@@ -82,10 +83,7 @@ export function Topbar() {
           <Link href="/settings" className="p-2 text-[#dee1f7]/60 hover:text-[#00f2ff] transition-all active:scale-95 rounded-lg hover:bg-primary-container/10">
             <Settings className="w-5 h-5" />
           </Link>
-          <button className="relative p-2 text-[#dee1f7]/60 hover:text-[#00f2ff] transition-all active:scale-95 rounded-lg hover:bg-primary-container/10">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#090e1c]"></span>
-          </button>
+          <NotificationBell />
         </div>
         
         <button className="hidden sm:block bg-gradient-to-br from-[#00f2ff] to-[#0566d9] text-on-primary px-4 py-1.5 rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(0,242,255,0.3)] hover:shadow-[0_0_25px_rgba(0,242,255,0.5)] hover:brightness-110 transition-all active:scale-95">
