@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, type FormEvent } from 'react';
-import { Save, User, Shield, Key, CreditCard, Loader2, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Save, User, Shield, Key, CreditCard, Loader2, CheckCircle, AlertCircle, Eye, EyeOff, LogOut } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -26,6 +27,8 @@ type ActiveTab = 'profile' | 'security';
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('profile');
 
+  const { logout } = useAuth();
+
   // Profile state
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -44,6 +47,7 @@ export default function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // ─── Fetch Profile ──────────────────────────────────────────────────────────
 
@@ -398,6 +402,27 @@ export default function SettingsPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          )}
+
+          {/* Danger Zone — always visible when loaded */}
+          {!profileLoading && !profileError && profile && (
+            <div className="glass-card rounded-xl p-6 border border-red-500/10">
+              <h2 className="text-xl font-bold font-headline mb-4 text-red-400">Danger Zone</h2>
+              <p className="text-sm text-[#dee1f7]/50 mb-4">
+                Logging out will revoke all active sessions and redirect you to the login page.
+              </p>
+              <button
+                onClick={async () => {
+                  setLoggingOut(true);
+                  try { await logout(); } catch {} finally { setLoggingOut(false); }
+                }}
+                disabled={loggingOut}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/20 transition-colors active:scale-95 disabled:opacity-50"
+              >
+                {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                {loggingOut ? 'Logging out...' : 'Logout of all sessions'}
+              </button>
             </div>
           )}
         </div>

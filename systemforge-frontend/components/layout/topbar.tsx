@@ -1,10 +1,11 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Settings, Bell, Terminal, Menu } from 'lucide-react';
-import Image from 'next/image';
-import { motion } from 'motion/react';
+import { Settings, Bell, Terminal, Menu, LogOut, User, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '@/lib/auth-context';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard' },
@@ -15,6 +16,32 @@ const navLinks = [
 
 export function Topbar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } catch {
+      // logout() in auth-context already handles cleanup even on failure
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   return (
     <header className="bg-[#090e1c]/80 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.3)] fixed top-0 z-50 flex justify-between items-center h-16 px-4 md:px-6 w-full border-b border-outline-variant/10 transition-all duration-300">
@@ -69,16 +96,45 @@ export function Topbar() {
           <Menu className="w-6 h-6" />
         </button>
 
-        <Link href="/settings" className="w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden border-2 border-primary-container/20 hover:border-[#00f2ff] transition-colors block shrink-0">
-          <Image 
-            src="https://picsum.photos/seed/dev/100/100" 
-            alt="Developer Profile" 
-            width={36} 
-            height={36} 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </Link>
+        {/* Profile Avatar + Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="w-8 h-8 md:w-9 md:h-9 rounded-full overflow-hidden border-2 border-primary-container/20 hover:border-[#00f2ff] transition-colors block shrink-0 bg-gradient-to-br from-[#00f2ff]/20 to-[#0566d9]/20 flex items-center justify-center"
+          >
+            <User className="w-4 h-4 md:w-5 md:h-5 text-[#00f2ff]" />
+          </button>
+
+          <AnimatePresence>
+            {profileOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 top-12 w-48 bg-[#0e1322] border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50"
+              >
+                <Link
+                  href="/settings"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-[#dee1f7]/80 hover:bg-white/5 hover:text-[#e1fdff] transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </Link>
+                <div className="h-px bg-outline-variant/20" />
+                <button
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                >
+                  {loggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                  {loggingOut ? 'Logging out...' : 'Logout'}
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </header>
   );
