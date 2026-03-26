@@ -41,7 +41,7 @@ export default function RegisterPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         // Extract specific field validation errors if they exist (422)
-        if (err.status === 422 && err.response.data && typeof err.response.data === 'object') {
+        if (err.status === 422 && err.response?.data && typeof err.response.data === 'object') {
           const fieldErrors = Object.values(err.response.data).join(', ');
           setError(fieldErrors || err.message);
         } else {
