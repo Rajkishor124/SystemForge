@@ -18,6 +18,20 @@ services:
       timeout: 5s
       retries: 5
 
+  systemforge-redis:
+    image: redis:7-alpine
+    container_name: systemforge-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   systemforge-backend:
     build: 
       context: ./systemforge-backend
@@ -34,8 +48,12 @@ services:
       - JWT_SECRET=SystemForgeSuperSecretKeyForDevelopmentAndTestingReplaceMeInProd!
       # Pass through OpenAI key if it exists in host
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - SPRING_REDIS_HOST=systemforge-redis
+      - SPRING_REDIS_PORT=6379
     depends_on:
       systemforge-db:
+        condition: service_healthy
+      systemforge-redis:
         condition: service_healthy
 
   systemforge-frontend:
@@ -53,3 +71,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:

@@ -27,6 +27,17 @@ spring:
       max-lifetime: 1200000         # 20 minutes
       leak-detection-threshold: 60000
 
+  # ─── REDIS ───────────────────────────────────────────────────────────────
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+    timeout: 2000ms
+
   # ─── FLYWAY ───────────────────────────────────────────────────────────────
   flyway:
     enabled: true
