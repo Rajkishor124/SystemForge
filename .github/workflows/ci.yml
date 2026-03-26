@@ -1,0 +1,70 @@
+name: SystemForge Enterprise Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Cancel in-progress runs matching the same workflow/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-verify:
+    name: Backend Build & Test (Java 21)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./systemforge-backend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Make Maven Wrapper Executable
+        run: chmod +x ./mvnw
+      
+      - name: Build and Test with Maven
+        run: ./mvnw clean verify
+        env:
+          # In CI, we usually don't have the live DB unless we use testcontainers/services
+          # The Spring Boot tests will rely on H2 or Mock configurations
+          SPRING_PROFILES_ACTIVE: test
+
+  frontend-verify:
+    name: Frontend Build & Lint (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./systemforge-frontend
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './systemforge-frontend/package-lock.json'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Strict Type and Lint Checks
+        run: npm run lint
+      
+      - name: Production Build (Turbopack / Standalone)
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          # Required to allow Next.js build without needing real backend
+          NEXT_PUBLIC_API_URL: http://localhost:8080 
