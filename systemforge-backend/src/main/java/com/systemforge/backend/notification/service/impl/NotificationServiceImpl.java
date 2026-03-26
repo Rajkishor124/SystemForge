@@ -31,6 +31,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class NotificationServiceImpl implements NotificationService {
 
     private static final String OTP_EMAIL_SUBJECT = "Your SystemForge OTP";

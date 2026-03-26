@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 /** External representation of a user's architecture design session. */
 @Data

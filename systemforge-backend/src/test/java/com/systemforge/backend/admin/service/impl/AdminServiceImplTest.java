@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class AdminServiceImplTest {
 
     @Mock
@@ -48,7 +49,6 @@ class AdminServiceImplTest {
     private AdminServiceImpl adminService;
 
     private User testUser;
-    private UserResponse testUserResponse;
     private UUID userId;
 
     @BeforeEach
@@ -59,13 +59,6 @@ class AdminServiceImplTest {
         testUser.setEmail("test@example.com");
         testUser.setRole(UserRole.DEVELOPER);
         testUser.setAccountStatus(AccountStatus.SUSPENDED);
-
-        testUserResponse = UserResponse.builder()
-                .id(userId)
-                .email("test@example.com")
-                .role(UserRole.DEVELOPER)
-                .accountStatus(AccountStatus.SUSPENDED)
-                .build();
     }
 
     @Test

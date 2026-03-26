@@ -35,6 +35,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class AdminServiceImpl implements AdminService {
 
     private final UserRepository userRepository;

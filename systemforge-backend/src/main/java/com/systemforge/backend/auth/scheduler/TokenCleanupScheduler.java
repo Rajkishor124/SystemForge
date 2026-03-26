@@ -1,6 +1,5 @@
 package com.systemforge.backend.auth.scheduler;
 
-import com.systemforge.backend.auth.repository.OtpRecordRepository;
 import com.systemforge.backend.auth.repository.RefreshTokenRepository;
 import com.systemforge.backend.notification.enums.NotificationStatus;
 import com.systemforge.backend.notification.repository.NotificationEventRepository;
@@ -21,7 +20,7 @@ public class TokenCleanupScheduler {
     private static final int CLEANUP_GRACE_DAYS = 1;
 
     private final RefreshTokenRepository refreshTokenRepository;
-    private final OtpRecordRepository otpRecordRepository;
+
     private final NotificationEventRepository notificationEventRepository;
 
     @Scheduled(cron = "0 0 2 * * *", zone = "UTC")

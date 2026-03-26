@@ -35,6 +35,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class AuthServiceImpl implements AuthService {
 
     private static final int OTP_VALIDITY_MINUTES = 10;

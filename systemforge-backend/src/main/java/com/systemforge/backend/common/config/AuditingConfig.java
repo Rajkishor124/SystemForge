@@ -23,6 +23,7 @@ import java.util.Optional;
  */
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+@SuppressWarnings("null")
 public class AuditingConfig {
 
     private static final String SYSTEM_AUDITOR = "SYSTEM";

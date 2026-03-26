@@ -7,8 +7,8 @@ import com.systemforge.backend.recommendation.engine.RecommendationEngine;
 import com.systemforge.backend.recommendation.mapper.ProjectContextMapper;
 import com.systemforge.backend.recommendation.model.ProjectContext;
 import com.systemforge.backend.recommendation.service.RecommendationService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

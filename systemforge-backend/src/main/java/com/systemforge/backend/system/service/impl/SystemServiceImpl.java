@@ -12,7 +12,6 @@ import com.systemforge.backend.recommendation.service.RecommendationService;
 import com.systemforge.backend.system.dto.SystemDefinitionDto;
 import com.systemforge.backend.system.dto.UserSystemConfigDto;
 import com.systemforge.backend.system.dto.request.CreateSystemConfigRequest;
-import com.systemforge.backend.system.entity.SystemDefinition;
 import com.systemforge.backend.system.entity.UserSystemConfig;
 import com.systemforge.backend.system.mapper.SystemMapper;
 import com.systemforge.backend.system.repository.SystemDefinitionRepository;

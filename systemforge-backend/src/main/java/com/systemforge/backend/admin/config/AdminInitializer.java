@@ -26,6 +26,7 @@ import java.util.Optional;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class AdminInitializer {
 
     private final UserRepository userRepository;
