@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  systemforge-db:
+    image: postgres:15-alpine
+    container_name: systemforge-db
+    environment:
+      POSTGRES_USER: system_forge_user
+      POSTGRES_PASSWORD: my_secure_password
+      POSTGRES_DB: system_forge
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U system_forge_user -d system_forge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  systemforge-backend:
+    build: 
+      context: ./systemforge-backend
+      dockerfile: Dockerfile
+    container_name: systemforge-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://systemforge-db:5432/system_forge
+      - SPRING_DATASOURCE_USERNAME=system_forge_user
+      - SPRING_DATASOURCE_PASSWORD=my_secure_password
+      # Replace this in production with a real, securely generated key
+      - JWT_SECRET=SystemForgeSuperSecretKeyForDevelopmentAndTestingReplaceMeInProd!
+      # Pass through OpenAI key if it exists in host
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    depends_on:
+      systemforge-db:
+        condition: service_healthy
+
+  systemforge-frontend:
+    build:
+      context: ./systemforge-frontend
+      dockerfile: Dockerfile
+    container_name: systemforge-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      # Internal Docker network routing to backend container
+      - NEXT_PUBLIC_API_URL=http://systemforge-backend:8080
+    depends_on:
+      - systemforge-backend
+
+volumes:
+  postgres_data:
