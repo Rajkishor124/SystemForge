@@ -11,6 +11,8 @@ spring:
     name: systemforge-backend
   main:
     allow-bean-definition-overriding: true
+  cache:
+    type: ${SPRING_CACHE_TYPE:none}
 
   # ─── DATABASE ─────────────────────────────────────────────────────────────
   datasource:

@@ -48,6 +48,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - SPRING_REDIS_HOST=systemforge-redis
       - SPRING_REDIS_PORT=6379
+      - SPRING_CACHE_TYPE=redis
     depends_on:
       systemforge-db:
         condition: service_healthy
