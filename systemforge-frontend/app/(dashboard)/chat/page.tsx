@@ -345,9 +345,9 @@ export default function ChatPage() {
   // ─── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full max-w-7xl mx-auto w-full p-6 gap-6">
+    <div className="flex h-[calc(100vh-4rem)] max-w-7xl mx-auto w-full p-6 gap-6 overflow-hidden">
       {/* ────── Sidebar ────── */}
-      <div className="w-80 flex-shrink-0 flex flex-col glass-card rounded-xl border border-outline-variant/20 overflow-hidden">
+      <div className="w-80 flex-shrink-0 flex flex-col glass-card rounded-xl border border-outline-variant/20 overflow-hidden min-h-0">
         <div className="p-4 border-b border-outline-variant/10 bg-surface-container-lowest">
           <button
             onClick={createNewConversation}
