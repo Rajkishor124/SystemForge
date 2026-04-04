@@ -148,14 +148,26 @@ export default function ArchitecturePage() {
   }, []);
 
   useEffect(() => {
-    if (!configId) {
-      router.push('/dashboard');
-      return;
-    }
-
     async function fetchData() {
       try {
-        const res = await api<SystemConfig>(`/api/v1/systems/configs/${configId}`);
+        let currentConfigId = configId;
+        
+        // Smart fallback: If no configId provided in URL, try to load their latest project
+        if (!currentConfigId) {
+          const listRes = await api<{ content: SystemConfig[] }>('/api/v1/systems/configs?page=0&size=1');
+          if (listRes.data && listRes.data.content.length > 0) {
+            currentConfigId = listRes.data.content[0].id;
+            // Update URL cleanly without refreshing page
+            router.replace(`/architecture?configId=${currentConfigId}`);
+            return; // let the URL change trigger the next useEffect cycle
+          } else {
+            setError('NO_PROJECT');
+            setLoading(false);
+            return;
+          }
+        }
+
+        const res = await api<SystemConfig>(`/api/v1/systems/configs/${currentConfigId}`);
         const config = res.data;
 
         if (!config.generatedOutputJson) {
@@ -251,14 +263,34 @@ export default function ArchitecturePage() {
   }
 
   if (error) {
+    if (error === 'NO_PROJECT') {
+      return (
+        <div className="flex-1 flex items-center justify-center p-8 bg-[#090e1c]">
+          <div className="max-w-md w-full text-center glass-card rounded-xl p-10 border border-outline-variant/10">
+            <div className="relative w-16 h-16 mx-auto mb-6">
+              <div className="absolute inset-0 bg-primary-container/10 blur-xl rounded-full"></div>
+              <Server className="w-16 h-16 text-primary-container/40 relative z-10" />
+            </div>
+            <h2 className="text-xl font-bold font-headline mb-3 text-[#e1fdff]">No Project Selected</h2>
+            <p className="text-sm text-[#dee1f7]/60 mb-8 leading-relaxed">
+              You haven't generated any system architectures yet. Start a new project to view your topology graph.
+            </p>
+            <button onClick={() => router.push('/dashboard')} className="cta-gradient text-on-primary px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary-container/20 active:scale-95 transition-all">
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-md w-full text-center glass-card rounded-xl p-8">
+      <div className="flex-1 flex items-center justify-center p-8 bg-[#090e1c]">
+        <div className="max-w-md w-full text-center glass-card rounded-xl p-8 border border-red-500/20">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold font-headline mb-3 text-[#e1fdff]">Error</h2>
           <p className="text-sm text-[#dee1f7]/60 mb-6">{error}</p>
-          <button onClick={() => router.push('/dashboard')} className="cta-gradient text-on-primary px-5 py-2.5 rounded-lg font-bold text-sm">
-            Go to Dashboard
+          <button onClick={() => router.push('/dashboard')} className="bg-surface-container-high border border-outline-variant/20 text-[#e1fdff] px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-surface-container-highest transition-colors">
+            Return to Dashboard
           </button>
         </div>
       </div>
