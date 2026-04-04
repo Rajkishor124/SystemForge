@@ -84,8 +84,8 @@ export default function ResultPage() {
           const listRes = await api<{ content: SystemConfig[] }>('/api/v1/systems/configs?page=0&size=1');
           if (listRes.data && listRes.data.content.length > 0) {
             currentConfigId = listRes.data.content[0].id;
-            router.replace(`/result?configId=${currentConfigId}`);
-            return;
+            // Update URL cleanly without triggering a full page re-render loop
+            window.history.replaceState(null, '', `/result?configId=${currentConfigId}`);
           } else {
             setError('NO_PROJECT');
             setLoading(false);

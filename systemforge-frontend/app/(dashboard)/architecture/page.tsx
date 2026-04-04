@@ -157,9 +157,8 @@ export default function ArchitecturePage() {
           const listRes = await api<{ content: SystemConfig[] }>('/api/v1/systems/configs?page=0&size=1');
           if (listRes.data && listRes.data.content.length > 0) {
             currentConfigId = listRes.data.content[0].id;
-            // Update URL cleanly without refreshing page
-            router.replace(`/architecture?configId=${currentConfigId}`);
-            return; // let the URL change trigger the next useEffect cycle
+            // Update URL cleanly without triggering a full page re-render loop
+            window.history.replaceState(null, '', `/architecture?configId=${currentConfigId}`);
           } else {
             setError('NO_PROJECT');
             setLoading(false);
