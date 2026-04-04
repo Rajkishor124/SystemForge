@@ -53,6 +53,13 @@ public class Template extends BaseEntity {
     private AppScale appScale;
 
     /**
+     * A curated default prompt that pre-fills the "System Requirements" field
+     * when a user selects this template on the /create page.
+     */
+    @Column(name = "default_prompt", columnDefinition = "TEXT")
+    private String defaultPrompt;
+
+    /**
      * The full configuration blueprint as a JSON blob.
      * Schema: {apiDesign: {}, dbSchema: {}, techStack: [], rationale: ""}
      */

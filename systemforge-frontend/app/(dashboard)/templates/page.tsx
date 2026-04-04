@@ -22,6 +22,7 @@ interface Template {
   appType: string;
   systemType: string;
   appScale: string;
+  defaultPrompt: string | null;
   configJson: string;
   active: boolean;
   sortOrder: number;
@@ -126,6 +127,9 @@ export default function TemplatesPage() {
       appType: template.appType,
       appScale: template.appScale || 'SMALL',
     });
+    if (template.defaultPrompt) {
+      params.set('defaultPrompt', template.defaultPrompt);
+    }
     router.push(`/create?${params.toString()}`);
   };
 

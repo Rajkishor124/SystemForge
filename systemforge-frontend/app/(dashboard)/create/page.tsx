@@ -44,9 +44,11 @@ export default function CreatePage() {
     const tName = searchParams.get('templateName');
     const tType = searchParams.get('appType');
     const tScale = searchParams.get('appScale');
+    const tPrompt = searchParams.get('defaultPrompt');
     if (tName) setConfigName(tName);
     if (tType && APP_TYPES.some(t => t.value === tType)) setAppType(tType);
     if (tScale && APP_SCALES.some(s => s.value === tScale)) setAppScale(tScale);
+    if (tPrompt) setPrompt(tPrompt);
   }, [searchParams]);
 
   const canSubmit = configName.trim().length >= 3 && prompt.trim().length > 0 && !submitting;

@@ -21,6 +21,7 @@ public class TemplateDto {
     private AppType appType;
     private SystemType systemType;
     private AppScale appScale;
+    private String defaultPrompt;
     private String configJson;
     private boolean active;
     private int sortOrder;
