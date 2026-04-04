@@ -1,22 +1,39 @@
 package com.systemforge.backend.chat.service.impl;
 
-import com.systemforge.backend.chat.dto.ChatRequest;
-import com.systemforge.backend.chat.dto.ChatResponse;
+import com.systemforge.backend.auth.util.SecurityPrincipalUtil;
+import com.systemforge.backend.chat.dto.*;
+import com.systemforge.backend.chat.entity.ChatMessageEntity;
+import com.systemforge.backend.chat.entity.Conversation;
+import com.systemforge.backend.chat.repository.ChatMessageRepository;
+import com.systemforge.backend.chat.repository.ConversationRepository;
 import com.systemforge.backend.chat.service.ChatService;
+import com.systemforge.backend.common.exception.BusinessException;
 import com.systemforge.backend.recommendation.ai.client.OpenAiClientAdapter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@SuppressWarnings("null")
 public class ChatServiceImpl implements ChatService {
 
     @Autowired(required = false)
     private OpenAiClientAdapter openAiClientAdapter;
+
+    @Autowired
+    private ConversationRepository conversationRepository;
+
+    @Autowired
+    private ChatMessageRepository chatMessageRepository;
 
     // ─── Rule-based response patterns for system architecture topics ──────────
 
@@ -267,31 +284,200 @@ public class ChatServiceImpl implements ChatService {
             - *"How do I scale my API to handle 100k concurrent users?"*
             """;
 
+    // ─── Legacy chat endpoint (backward compatibility) ─────────────────────────
+
     @Override
     public ChatResponse chat(ChatRequest request) {
         String message = request.getMessage();
 
-        // Try OpenAI-powered response if adapter is available
         if (openAiClientAdapter != null) {
             try {
-                String prompt = buildPrompt(request);
-                // Use the existing adapter for a simple text completion
-                // This leverages the structured completion approach
+                String prompt = buildPromptFromRequest(request);
                 String reply = openAiClientAdapter.getStructuredCompletion(prompt, String.class);
-                return ChatResponse.builder()
-                        .reply(reply)
-                        .source("AI")
-                        .build();
+                return ChatResponse.builder().reply(reply).source("AI").build();
             } catch (Exception e) {
                 log.warn("OpenAI chat failed, falling back to rule engine: {}", e.getMessage());
             }
         }
 
-        // Fall back to rule-based responses
         return chatWithRuleEngine(message);
     }
 
-    private String buildPrompt(ChatRequest request) {
+    // ─── Conversation CRUD ─────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public ConversationDto createConversation() {
+        UUID userId = SecurityPrincipalUtil.getAuthenticatedUserId();
+
+        Conversation conversation = Conversation.builder()
+                .userId(userId)
+                .title("New Conversation")
+                .build();
+
+        conversation = conversationRepository.save(conversation);
+
+        return toDto(conversation, 0, null);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ConversationDto> listConversations() {
+        UUID userId = SecurityPrincipalUtil.getAuthenticatedUserId();
+        List<Conversation> conversations = conversationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
+        return conversations.stream().map(conv -> {
+            List<ChatMessageEntity> messages = chatMessageRepository
+                    .findByConversationIdOrderByCreatedAtAsc(conv.getId());
+            String lastPreview = null;
+            if (!messages.isEmpty()) {
+                ChatMessageEntity last = messages.get(messages.size() - 1);
+                lastPreview = last.getContent().length() > 80
+                        ? last.getContent().substring(0, 80) + "..."
+                        : last.getContent();
+            }
+            return toDto(conv, messages.size(), lastPreview);
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ConversationDetailDto getConversation(UUID conversationId) {
+        UUID userId = SecurityPrincipalUtil.getAuthenticatedUserId();
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new BusinessException("CONV_NOT_FOUND", "Conversation not found", HttpStatus.NOT_FOUND));
+
+        if (!conversation.getUserId().equals(userId)) {
+            throw new BusinessException("CONV_ACCESS_DENIED", "Access denied", HttpStatus.FORBIDDEN);
+        }
+
+        List<ChatMessageEntity> messages = chatMessageRepository
+                .findByConversationIdOrderByCreatedAtAsc(conversationId);
+
+        return ConversationDetailDto.builder()
+                .id(conversation.getId())
+                .title(conversation.getTitle())
+                .createdAt(conversation.getCreatedAt())
+                .updatedAt(conversation.getUpdatedAt())
+                .messages(messages.stream().map(this::toMessageDto).collect(Collectors.toList()))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public ChatMessageDto sendMessage(UUID conversationId, SendMessageRequest request) {
+        UUID userId = SecurityPrincipalUtil.getAuthenticatedUserId();
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new BusinessException("CONV_NOT_FOUND", "Conversation not found", HttpStatus.NOT_FOUND));
+
+        if (!conversation.getUserId().equals(userId)) {
+            throw new BusinessException("CONV_ACCESS_DENIED", "Access denied", HttpStatus.FORBIDDEN);
+        }
+
+        // Save user message
+        ChatMessageEntity userMsg = ChatMessageEntity.builder()
+                .conversationId(conversationId)
+                .role("user")
+                .content(request.getMessage())
+                .build();
+        chatMessageRepository.save(userMsg);
+
+        // Auto-title from first user message
+        List<ChatMessageEntity> existingMessages = chatMessageRepository
+                .findByConversationIdOrderByCreatedAtAsc(conversationId);
+        long userMessageCount = existingMessages.stream().filter(m -> "user".equals(m.getRole())).count();
+        if (userMessageCount <= 1) {
+            String autoTitle = request.getMessage().length() > 50
+                    ? request.getMessage().substring(0, 50) + "..."
+                    : request.getMessage();
+            conversation.setTitle(autoTitle);
+            conversationRepository.save(conversation);
+        }
+
+        // Generate AI response
+        ChatResponse aiResponse = generateAiResponse(request.getMessage(), existingMessages);
+
+        // Save AI message
+        ChatMessageEntity aiMsg = ChatMessageEntity.builder()
+                .conversationId(conversationId)
+                .role("assistant")
+                .content(aiResponse.getReply())
+                .source(aiResponse.getSource())
+                .build();
+        aiMsg = chatMessageRepository.save(aiMsg);
+
+        return toMessageDto(aiMsg);
+    }
+
+    @Override
+    @Transactional
+    public ConversationDto renameConversation(UUID conversationId, RenameConversationRequest request) {
+        UUID userId = SecurityPrincipalUtil.getAuthenticatedUserId();
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new BusinessException("CONV_NOT_FOUND", "Conversation not found", HttpStatus.NOT_FOUND));
+
+        if (!conversation.getUserId().equals(userId)) {
+            throw new BusinessException("CONV_ACCESS_DENIED", "Access denied", HttpStatus.FORBIDDEN);
+        }
+
+        conversation.setTitle(request.getTitle());
+        conversation = conversationRepository.save(conversation);
+        return toDto(conversation, 0, null);
+    }
+
+    @Override
+    @Transactional
+    public void deleteConversation(UUID conversationId) {
+        UUID userId = SecurityPrincipalUtil.getAuthenticatedUserId();
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new BusinessException("CONV_NOT_FOUND", "Conversation not found", HttpStatus.NOT_FOUND));
+
+        if (!conversation.getUserId().equals(userId)) {
+            throw new BusinessException("CONV_ACCESS_DENIED", "Access denied", HttpStatus.FORBIDDEN);
+        }
+
+        conversation.setDeleted(true);
+        conversationRepository.save(conversation);
+    }
+
+    // ─── Private helpers ───────────────────────────────────────────────────────
+
+    private ChatResponse generateAiResponse(String message, List<ChatMessageEntity> history) {
+        if (openAiClientAdapter != null) {
+            try {
+                String prompt = buildPromptFromHistory(message, history);
+                String reply = openAiClientAdapter.getStructuredCompletion(prompt, String.class);
+                return ChatResponse.builder().reply(reply).source("AI").build();
+            } catch (Exception e) {
+                log.warn("OpenAI chat failed, falling back to rule engine: {}", e.getMessage());
+            }
+        }
+        return chatWithRuleEngine(message);
+    }
+
+    private String buildPromptFromHistory(String currentMessage, List<ChatMessageEntity> history) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("You are SystemForge AI — an expert system design assistant. ");
+        sb.append("Provide concise, practical architecture advice using markdown formatting.\n\n");
+
+        // Include last 10 messages for context
+        List<ChatMessageEntity> recent = history.size() > 10
+                ? history.subList(history.size() - 10, history.size())
+                : history;
+
+        if (!recent.isEmpty()) {
+            sb.append("Previous conversation:\n");
+            for (ChatMessageEntity msg : recent) {
+                sb.append(msg.getRole()).append(": ").append(msg.getContent()).append("\n");
+            }
+            sb.append("\n");
+        }
+
+        sb.append("User: ").append(currentMessage);
+        return sb.toString();
+    }
+
+    private String buildPromptFromRequest(ChatRequest request) {
         StringBuilder sb = new StringBuilder();
         sb.append("You are SystemForge AI — an expert system design assistant. ");
         sb.append("Provide concise, practical architecture advice using markdown formatting.\n\n");
@@ -323,6 +509,27 @@ public class ChatServiceImpl implements ChatService {
         return ChatResponse.builder()
                 .reply(DEFAULT_RESPONSE.trim())
                 .source("RULE_ENGINE")
+                .build();
+    }
+
+    private ConversationDto toDto(Conversation conv, int messageCount, String lastPreview) {
+        return ConversationDto.builder()
+                .id(conv.getId())
+                .title(conv.getTitle())
+                .createdAt(conv.getCreatedAt())
+                .updatedAt(conv.getUpdatedAt())
+                .messageCount(messageCount)
+                .lastMessagePreview(lastPreview)
+                .build();
+    }
+
+    private ChatMessageDto toMessageDto(ChatMessageEntity msg) {
+        return ChatMessageDto.builder()
+                .id(msg.getId())
+                .role(msg.getRole())
+                .content(msg.getContent())
+                .source(msg.getSource())
+                .createdAt(msg.getCreatedAt())
                 .build();
     }
 }
