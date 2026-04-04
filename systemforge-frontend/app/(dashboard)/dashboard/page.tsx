@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Plus, Brain, ArrowRight, Zap, Shield, Database, Loader2, Trash2, AlertCircle, Server } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api, ApiError } from '@/lib/api';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   async function fetchConfigs() {
     try {
@@ -80,9 +82,16 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchConfigs(); }, []);
 
-  async function handleDelete(configId: string) {
-    if (!confirm('Delete this project? This cannot be undone.')) return;
-    setDeleting(configId);
+  function confirmDelete(configId: string) {
+    setProjectToDelete(configId);
+  }
+
+  async function handleDelete() {
+    if (!projectToDelete) return;
+    setDeleting(projectToDelete);
+    const configId = projectToDelete;
+    // Hide modal immediately for better UX
+    setProjectToDelete(null);
     try {
       await api(`/api/v1/systems/configs/${configId}`, { method: 'DELETE' });
       setConfigs(prev => prev.filter(c => c.id !== configId));
@@ -192,7 +201,7 @@ export default function DashboardPage() {
                           </span>
                           <div className="flex items-center gap-3">
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleDelete(config.id); }}
+                              onClick={(e) => { e.stopPropagation(); confirmDelete(config.id); }}
                               className="p-2 rounded-lg text-[#dee1f7]/20 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                               disabled={deleting === config.id}
                             >
@@ -256,6 +265,17 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!projectToDelete}
+        onClose={() => setProjectToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete Project?"
+        description="Are you sure you want to permanently delete this generated architecture? This action cannot be undone."
+        confirmLabel="Delete Project"
+        cancelLabel="Keep Project"
+        variant="danger"
+      />
     </div>
   );
 }
