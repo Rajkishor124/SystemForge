@@ -10,6 +10,7 @@ const mainNavItems = [
   { name: 'New Session', href: '/create', icon: PlusSquare },
   { name: 'Architecture History', href: '/dashboard', icon: History },
   { name: 'Templates', href: '/templates', icon: Layers },
+  { name: 'Playground', href: '/playground', icon: Cpu },
   { name: 'AI Chat', href: '/chat', icon: MessageSquare },
   { name: 'Resource Graph', href: '/architecture', icon: Network },
   { name: 'Env Variables', href: '/env', icon: Sliders },

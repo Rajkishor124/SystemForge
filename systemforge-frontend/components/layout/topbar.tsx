@@ -10,6 +10,7 @@ import { NotificationBell } from './notification-bell';
 
 const navLinks = [
   { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Playground', href: '/playground' },
   { name: 'Architecture', href: '/architecture' },
   { name: 'AI Chat', href: '/chat' },
   { name: 'Schema', href: '/result' },
