@@ -11,7 +11,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * is a self-contained package, ready for microservice extraction in future phases.
  */
 @SpringBootApplication(exclude = {
-		com.openai.springboot.OpenAIClientAutoConfiguration.class
+		com.openai.springboot.OpenAIClientAutoConfiguration.class,
+		org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration.class
 })
 public class SystemForgeApplication {
 

@@ -5,8 +5,8 @@ import com.systemforge.backend.architect.dto.AgentStep;
 import com.systemforge.backend.architect.llm.LlmClient;
 import com.systemforge.backend.architect.llm.LlmResponse;
 import com.systemforge.backend.architect.prompts.PromptRegistry;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -26,19 +26,13 @@ import java.util.Map;
  * <p>Falls back to rule-based responses when LLM is unavailable.
  */
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class AgentOrchestrator {
 
     private final PromptRegistry promptRegistry;
     private final DecisionPipeline decisionPipeline;
-
-    @Autowired(required = false)
-    private LlmClient llmClient;
-
-    public AgentOrchestrator(PromptRegistry promptRegistry, DecisionPipeline decisionPipeline) {
-        this.promptRegistry = promptRegistry;
-        this.decisionPipeline = decisionPipeline;
-    }
+    private final LlmClient llmClient;
 
     /**
      * Execute the full agent pipeline for a given context.

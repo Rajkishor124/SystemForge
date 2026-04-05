@@ -8,8 +8,6 @@ import com.systemforge.backend.architect.llm.LlmClient;
 import com.systemforge.backend.architect.llm.LlmResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Component;
 
 /**
  * OpenAI implementation of the LLM client.
@@ -21,8 +19,6 @@ import org.springframework.stereotype.Component;
  *     <li>System/user message separation</li>
  * </ul>
  */
-@Component
-@ConditionalOnBean(OpenAIClient.class)
 @Slf4j
 public class OpenAiLlmClient implements LlmClient {
 
