@@ -32,24 +32,21 @@ export default function CreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [configName, setConfigName] = useState('');
-  const [prompt, setPrompt] = useState('');
-  const [appType, setAppType] = useState('ECOMMERCE');
-  const [appScale, setAppScale] = useState('SMALL');
+  const tName = searchParams.get('templateName');
+  const tType = searchParams.get('appType');
+  const tScale = searchParams.get('appScale');
+  const tPrompt = searchParams.get('defaultPrompt');
+
+  const [configName, setConfigName] = useState(tName || '');
+  const [prompt, setPrompt] = useState(tPrompt || '');
+  const [appType, setAppType] = useState(
+    tType && APP_TYPES.some((t) => t.value === tType) ? tType : 'ECOMMERCE'
+  );
+  const [appScale, setAppScale] = useState(
+    tScale && APP_SCALES.some((s) => s.value === tScale) ? tScale : 'SMALL'
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Pre-fill from template URL params
-  useEffect(() => {
-    const tName = searchParams.get('templateName');
-    const tType = searchParams.get('appType');
-    const tScale = searchParams.get('appScale');
-    const tPrompt = searchParams.get('defaultPrompt');
-    if (tName) setConfigName(tName);
-    if (tType && APP_TYPES.some(t => t.value === tType)) setAppType(tType);
-    if (tScale && APP_SCALES.some(s => s.value === tScale)) setAppScale(tScale);
-    if (tPrompt) setPrompt(tPrompt);
-  }, [searchParams]);
 
   const canSubmit = configName.trim().length >= 3 && prompt.trim().length > 0 && !submitting;
 

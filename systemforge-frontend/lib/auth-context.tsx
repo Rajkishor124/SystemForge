@@ -43,28 +43,26 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
-
-  // Hydrate from localStorage on mount
-  useEffect(() => {
-    const stored = getStoredTokens();
-    if (stored?.accessToken && stored.user) {
-      setState({
-        user: {
-          userId: stored.user.userId,
-          role: stored.user.role,
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } else {
-      setState((prev) => ({ ...prev, isLoading: false }));
+  const [state, setState] = useState<AuthState>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = getStoredTokens();
+      if (stored?.accessToken && stored.user) {
+        return {
+          user: {
+            userId: stored.user.userId,
+            role: stored.user.role,
+          },
+          isAuthenticated: true,
+          isLoading: false,
+        };
+      }
     }
-  }, []);
+    return {
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    };
+  });
 
   const login = useCallback(
     async (email: string, password: string) => {

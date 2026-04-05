@@ -53,7 +53,7 @@ export function ConfirmModal({
   };
 
   const styles = getVariantStyles();
-  const Icon = icon ? () => <>{icon}</> : styles.DefaultIcon;
+  const DefaultIcon = styles.DefaultIcon;
 
   return (
     <AnimatePresence>
@@ -85,7 +85,7 @@ export function ConfirmModal({
 
               <div className="flex flex-col items-center text-center">
                 <div className={`p-4 rounded-full border mb-4 ${styles.iconClass}`}>
-                  <Icon className="w-8 h-8" />
+                  {icon ? icon : <DefaultIcon className="w-8 h-8" />}
                 </div>
                 
                 <h3 className="text-xl font-bold font-headline text-[#e1fdff] mb-2">

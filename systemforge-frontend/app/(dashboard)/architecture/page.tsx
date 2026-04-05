@@ -272,7 +272,7 @@ export default function ArchitecturePage() {
             </div>
             <h2 className="text-xl font-bold font-headline mb-3 text-[#e1fdff]">No Project Selected</h2>
             <p className="text-sm text-[#dee1f7]/60 mb-8 leading-relaxed">
-              You haven't generated any system architectures yet. Start a new project to view your topology graph.
+              You haven&apos;t generated any system architectures yet. Start a new project to view your topology graph.
             </p>
             <button onClick={() => router.push('/dashboard')} className="cta-gradient text-on-primary px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary-container/20 active:scale-95 transition-all">
               Go to Dashboard

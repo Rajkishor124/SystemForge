@@ -491,7 +491,7 @@ export default function PlaygroundPage() {
                 </div>
                 <h3 className="text-lg font-bold font-headline text-[#e1fdff] mb-2">No Architecture Generated</h3>
                 <p className="text-xs text-[#dee1f7]/40 max-w-xs leading-relaxed">
-                  Select a service type, variant, and features from the left panel, then click "Generate" to see the architecture.
+                  Select a service type, variant, and features from the left panel, then click &quot;Generate&quot; to see the architecture.
                 </p>
               </div>
             ) : (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Brain, Database, Server, Shield, Zap, Search, Loader2, AlertCircle, Tag, ArrowRight, DollarSign, Layers, Cpu } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
@@ -88,7 +88,7 @@ export default function TemplatesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  async function fetchTemplates() {
+  const fetchTemplates = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -105,9 +105,9 @@ export default function TemplatesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filterType, filterScale]);
 
-  useEffect(() => { fetchTemplates(); }, [filterType, filterScale]);
+  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
   const filteredTemplates = templates.filter(t =>
     searchQuery === '' ||

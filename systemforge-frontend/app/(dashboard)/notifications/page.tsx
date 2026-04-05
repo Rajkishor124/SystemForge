@@ -14,6 +14,7 @@ export default function NotificationsPage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchNotifications(true);
   }, []);
@@ -114,9 +115,9 @@ export default function NotificationsPage() {
             <div className="w-16 h-16 rounded-full bg-[#00f2ff]/10 flex items-center justify-center mb-4">
               <Sparkles className="w-8 h-8 text-[#00f2ff] opacity-50" />
             </div>
-            <h3 className="text-lg font-bold text-[#e1fdff] mb-2">You're all caught up!</h3>
+            <h3 className="text-lg font-bold text-[#e1fdff] mb-2">You&apos;re all caught up!</h3>
             <p className="text-[#dee1f7]/50 max-w-sm">
-              We'll notify you here when your system generation completes or if there are important alerts.
+              We&apos;ll notify you here when your system generation completes or if there are important alerts.
             </p>
           </div>
         ) : (
