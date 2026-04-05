@@ -1,5 +1,6 @@
 package com.systemforge.backend.architect.orchestrator;
 
+import com.systemforge.backend.architect.decision.DecisionPipeline;
 import com.systemforge.backend.architect.dto.AgentStep;
 import com.systemforge.backend.architect.llm.LlmClient;
 import com.systemforge.backend.architect.llm.LlmResponse;
@@ -29,12 +30,14 @@ import java.util.Map;
 public class AgentOrchestrator {
 
     private final PromptRegistry promptRegistry;
+    private final DecisionPipeline decisionPipeline;
 
     @Autowired(required = false)
     private LlmClient llmClient;
 
-    public AgentOrchestrator(PromptRegistry promptRegistry) {
+    public AgentOrchestrator(PromptRegistry promptRegistry, DecisionPipeline decisionPipeline) {
         this.promptRegistry = promptRegistry;
+        this.decisionPipeline = decisionPipeline;
     }
 
     /**
@@ -130,59 +133,8 @@ public class AgentOrchestrator {
             return;
         }
 
-        long startTime = System.currentTimeMillis();
-
-        String systemPrompt = promptRegistry.get("system_architect").render();
-        String userPrompt = buildDesignPrompt(context);
-
-        LlmResponse response = llmClient.complete(systemPrompt, userPrompt);
-
-        context.setFinalReply(response.getContent());
-        context.setSource("AI");
-        context.addStep(AgentStep.builder()
-                .name("Architecture Design")
-                .order(1)
-                .status("COMPLETED")
-                .output("Generated comprehensive architecture design")
-                .durationMs(System.currentTimeMillis() - startTime)
-                .build());
-    }
-
-    private String buildDesignPrompt(AgentContext context) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Design a production-grade backend system based on this request:\n\n");
-        sb.append("USER REQUEST: ").append(context.getUserMessage()).append("\n\n");
-
-        if (!context.getConversationHistory().isEmpty()) {
-            sb.append("PREVIOUS CONTEXT:\n").append(context.getConversationContextString()).append("\n\n");
-        }
-
-        sb.append("""
-                RESPOND WITH THIS STRUCTURE:
-                
-                ## Architecture Overview
-                (High-level description of the system)
-                
-                ## Services
-                (List each microservice/module with its responsibility)
-                
-                ## Database Design
-                (Database choices with justification)
-                
-                ## API Endpoints
-                (Key API routes)
-                
-                ## Scaling Strategy
-                (How to scale this system)
-                
-                ## Tradeoffs
-                (Key tradeoffs and alternatives considered)
-                
-                ## Next Steps
-                (Actionable recommendations)
-                """);
-
-        return sb.toString();
+        // Phase 2: Use Decision Pipeline for step-by-step reasoning
+        decisionPipeline.execute(context);
     }
 
     // ─── Question Handler ──────────────────────────────────────────────────
