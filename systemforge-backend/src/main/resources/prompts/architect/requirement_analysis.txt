@@ -1,0 +1,26 @@
+Analyze the following system design request and extract structured requirements.
+
+USER REQUEST:
+{{message}}
+
+ADDITIONAL CONTEXT:
+{{context}}
+
+Extract the following information. If a field cannot be determined, use "UNKNOWN".
+
+Respond in this EXACT JSON format:
+{
+  "appType": "one of: ECOMMERCE, RIDE_HAILING, SAAS, FINTECH, HEALTHCARE, SOCIAL_MEDIA, FOOD_DELIVERY, EDTECH, IOT_PLATFORM, MARKETPLACE, ENTERPRISE_INTERNAL, CUSTOM",
+  "appScale": "one of: SMALL (under 10k users), MEDIUM (10k-500k users), LARGE (500k+ users)",
+  "primaryFeatures": ["list of core features mentioned"],
+  "nonFunctionalRequirements": ["performance", "security", "availability", etc.],
+  "constraints": ["budget", "team size", "timeline", etc.],
+  "estimatedConcurrentUsers": 0,
+  "summary": "one-sentence summary of what the user wants to build"
+}
+
+RULES:
+- Infer scale from user counts if mentioned (e.g., "1M users" → LARGE)
+- Include implicit features (e.g., ride-sharing implies maps, payments, notifications)
+- Be conservative with scale estimates if not explicitly stated
+- Return ONLY valid JSON, no explanations

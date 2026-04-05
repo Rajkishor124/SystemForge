@@ -1,0 +1,17 @@
+Classify the user's intent from the following message.
+
+USER MESSAGE:
+{{message}}
+
+CONVERSATION CONTEXT (last messages):
+{{context}}
+
+Respond with EXACTLY ONE of these intent types as a single word:
+- SYSTEM_DESIGN: User wants to design a new backend system or architecture
+- ANALYSIS: User wants to analyze or improve an existing architecture
+- QUESTION: User is asking a specific technical question
+- CODE_REQUEST: User wants generated code or implementation
+- FOLLOWUP: User is continuing a previous discussion with clarification
+- GREETING: User is greeting or making small talk
+
+Respond with only the intent type, nothing else.
