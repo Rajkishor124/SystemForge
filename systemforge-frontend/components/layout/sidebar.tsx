@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PlusSquare, History, Network, Sliders, Book, Activity, Cpu, Layers, MessageSquare, ShieldAlert } from 'lucide-react';
+import { PlusSquare, History, Network, Sliders, Book, Activity, Cpu, Layers, MessageSquare, ShieldAlert, Bot } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -11,7 +11,8 @@ const mainNavItems = [
   { name: 'Architecture History', href: '/dashboard', icon: History },
   { name: 'Templates', href: '/templates', icon: Layers },
   { name: 'Playground', href: '/playground', icon: Cpu },
-  { name: 'AI Chat', href: '/chat', icon: MessageSquare },
+  { name: 'AI Architect', href: '/architect', icon: Bot },
+  { name: 'Legacy Chat', href: '/chat', icon: MessageSquare },
   { name: 'Resource Graph', href: '/architecture', icon: Network },
   { name: 'Env Variables', href: '/env', icon: Sliders },
 ];
