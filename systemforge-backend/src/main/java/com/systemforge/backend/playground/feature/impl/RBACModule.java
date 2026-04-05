@@ -42,6 +42,7 @@ public class RBACModule implements FeatureModule {
                 """);
 
         // ─── Security: Method-level security ───────────────────────
+        context.addImport("org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity");
         context.setPlaceholder("RBAC_METHOD_SECURITY",
                 "@EnableMethodSecurity(prePostEnabled = true)");
 

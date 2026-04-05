@@ -28,13 +28,17 @@ public class TemplateStructure {
 
     /** REST controller code template */
     private String controllerTemplate;
+    @Builder.Default private java.util.Set<String> controllerImports = new java.util.HashSet<>();
 
     /** Service layer code template */
     private String serviceTemplate;
+    @Builder.Default private java.util.Set<String> serviceImports = new java.util.HashSet<>();
 
     /** Configuration class code template */
     private String configTemplate;
+    @Builder.Default private java.util.Set<String> configImports = new java.util.HashSet<>();
 
     /** Security configuration code template */
     private String securityTemplate;
+    @Builder.Default private java.util.Set<String> securityImports = new java.util.HashSet<>();
 }

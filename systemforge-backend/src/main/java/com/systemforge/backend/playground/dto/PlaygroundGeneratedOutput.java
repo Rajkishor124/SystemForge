@@ -23,6 +23,9 @@ import java.util.List;
 @Builder
 public class PlaygroundGeneratedOutput {
 
+    private String id;
+    private java.time.LocalDateTime createdAt;
+
     private ServiceType serviceType;
     private ServiceVariant variant;
     private List<FeatureToggle> appliedFeatures;

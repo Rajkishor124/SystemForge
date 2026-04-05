@@ -62,4 +62,14 @@ public class PlaygroundController {
         return ResponseEntity.ok(
                 ApiResponse.success("History loaded", playgroundService.getHistory()));
     }
+
+    @PostMapping("/export")
+    @Operation(summary = "Export generated architecture as a Spring Boot ZIP project")
+    public ResponseEntity<byte[]> exportProject(@Valid @RequestBody PlaygroundConfigRequest request) {
+        byte[] zipData = playgroundService.exportZip(request);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"systemforge-project.zip\"")
+                .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                .body(zipData);
+    }
 }

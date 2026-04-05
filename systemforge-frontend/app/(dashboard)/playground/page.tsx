@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Cpu, ChevronRight, Loader2, ToggleLeft, ToggleRight, Layers, Code2, Network, Sparkles, Copy, Check, Server, Shield, Database, Zap, Box, Radio } from 'lucide-react';
+import { Cpu, ChevronRight, Loader2, ToggleLeft, ToggleRight, Layers, Code2, Network, Sparkles, Copy, Check, Server, Shield, Database, Zap, Box, Radio, History, Download } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -28,6 +29,8 @@ interface PreviewData {
 }
 
 interface PlaygroundOutput {
+  id?: string;
+  createdAt?: string;
   serviceType: ServiceType;
   variant: ServiceVariant;
   appliedFeatures: FeatureToggle[];
@@ -91,24 +94,65 @@ export default function PlaygroundPage() {
   // Output state
   const [output, setOutput] = useState<PlaygroundOutput | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [activeCodeTab, setActiveCodeTab] = useState<keyof CodeSections>('controllerCode');
+
+  // History state
+  const [history, setHistory] = useState<PlaygroundOutput[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Loading states
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [loadingVariants, setLoadingVariants] = useState(false);
   const [loadingFeatures, setLoadingFeatures] = useState(false);
 
-  // ─── Load service types on mount ─────────────────────────────────────────
-
   useEffect(() => {
     (async () => {
       try {
         const res = await api<ServiceType[]>('/api/v1/playground/services');
         setServiceTypes(res.data);
-      } catch { /* silently fail */ }
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to load service types');
+      }
       finally { setLoadingTypes(false); }
     })();
+
+    fetchHistory();
   }, []);
+
+  const fetchHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const res = await api<PlaygroundOutput[]>('/api/v1/playground/history');
+      setHistory(res.data || []);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to load history');
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const loadHistoricalConfig = async (item: PlaygroundOutput) => {
+    setSelectedType(item.serviceType);
+    setSelectedVariant(item.variant);
+    
+    // Optimistically update features for the UI
+    const featuresSet = new Set<FeatureToggle>(item.appliedFeatures);
+    setEnabledFeatures(featuresSet);
+    
+    // Also load variants and features for these selections
+    try {
+      const varRes = await api<ServiceVariant[]>(`/api/v1/playground/services/${item.serviceType}/variants`);
+      setVariants(varRes.data);
+      const featRes = await api<FeatureToggle[]>(`/api/v1/playground/services/${item.serviceType}/variants/${item.variant}/features`);
+      setFeatures(featRes.data);
+    } catch {}
+
+    setOutput(item);
+    setShowHistory(false);
+    toast.success('Restored architecture from history');
+  };
 
   // ─── Load variants when type changes ─────────────────────────────────────
 
@@ -123,7 +167,9 @@ export default function PlaygroundPage() {
     try {
       const res = await api<ServiceVariant[]>(`/api/v1/playground/services/${type}/variants`);
       setVariants(res.data);
-    } catch { /* silently fail */ }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to load variants');
+    }
     finally { setLoadingVariants(false); }
   }, []);
 
@@ -138,7 +184,9 @@ export default function PlaygroundPage() {
     try {
       const res = await api<FeatureToggle[]>(`/api/v1/playground/services/${selectedType}/variants/${variant}/features`);
       setFeatures(res.data);
-    } catch { /* silently fail */ }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to load feature toggles');
+    }
     finally { setLoadingFeatures(false); }
   }, [selectedType]);
 
@@ -167,8 +215,47 @@ export default function PlaygroundPage() {
         },
       });
       setOutput(res.data);
-    } catch { /* silently fail */ }
+      toast.success('Architecture generated successfully');
+      fetchHistory(); // Refresh history
+    } catch (err: any) {
+      toast.error(err.message || 'Generation failed');
+    }
     finally { setGenerating(false); }
+  };
+
+  // ─── Export ──────────────────────────────────────────────────────────────
+
+  const handleExport = async () => {
+    if (!output || exporting) return;
+    setExporting(true);
+    try {
+      const response = await fetch('/api/v1/playground/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceType: output.serviceType,
+          variant: output.variant,
+          features: output.appliedFeatures,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `systemforge-${output.serviceType.toLowerCase()}-${output.variant.toLowerCase()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Project downloaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Export failed');
+    } finally {
+      setExporting(false);
+    }
   };
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -187,11 +274,74 @@ export default function PlaygroundPage() {
             </h1>
             <p className="text-[#dee1f7]/50 text-xs pl-[52px]">Configure, generate, and explore microservice architectures in real time.</p>
           </div>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border flex items-center gap-2 ${
+              showHistory
+                ? 'bg-primary-container/20 border-primary-container/40 text-primary-container'
+                : 'bg-surface-container border-outline-variant/20 hover:border-outline-variant/40 text-[#dee1f7]/70 hover:text-[#dee1f7]'
+            }`}
+          >
+            <History className="w-4 h-4" /> History ({history.length})
+          </button>
         </div>
       </div>
 
-      {/* 3-Panel Layout */}
+      {/* 3-Panel Layout (or 4-panel with History) */}
       <div className="flex-1 flex gap-4 px-6 pb-6 min-h-0 max-w-[1600px] mx-auto w-full">
+
+        {/* ────── HISTORY PANEL ────── */}
+        <AnimatePresence>
+          {showHistory && (
+            <motion.div
+              initial={{ opacity: 0, width: 0, margin: 0 }}
+              animate={{ opacity: 1, width: 280, marginRight: '1rem' }}
+              exit={{ opacity: 0, width: 0, margin: 0 }}
+              className="shrink-0 flex flex-col glass-card rounded-xl border border-outline-variant/20 overflow-hidden min-h-0"
+            >
+              <div className="p-4 border-b border-outline-variant/10 bg-surface-container-lowest flex justify-between items-center">
+                <h2 className="text-xs font-black uppercase tracking-widest text-[#dee1f7]/50 flex items-center gap-2">
+                  <History className="w-3.5 h-3.5 text-primary-container" /> History
+                </h2>
+              </div>
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
+                {loadingHistory ? (
+                  <div className="flex justify-center p-8"><Loader2 className="w-5 h-5 text-primary-container animate-spin" /></div>
+                ) : history.length === 0 ? (
+                  <div className="text-center p-6 text-xs text-[#dee1f7]/40">No generations yet.</div>
+                ) : (
+                  history.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => loadHistoricalConfig(item)}
+                      className="w-full text-left p-3 rounded-xl border border-outline-variant/10 hover:border-primary-container/30 hover:bg-surface-container transition-all group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary-container">
+                          {item.serviceType}
+                        </span>
+                        <span className="text-[9px] text-[#dee1f7]/40">
+                          {new Date(item.createdAt || '').toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-[#e1fdff] mb-1">{item.variant}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {item.appliedFeatures.slice(0, 2).map((f) => (
+                          <span key={f} className="text-[9px] text-[#dee1f7]/60 bg-white/5 px-1.5 py-0.5 rounded">
+                            {f.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                        {item.appliedFeatures.length > 2 && (
+                          <span className="text-[9px] text-[#dee1f7]/40">+{item.appliedFeatures.length - 2}</span>
+                        )}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ────── LEFT: Config Builder ────── */}
         <div className="w-80 shrink-0 flex flex-col glass-card rounded-xl border border-outline-variant/20 overflow-hidden min-h-0">
@@ -316,10 +466,20 @@ export default function PlaygroundPage() {
 
         {/* ────── CENTER: Architecture View ────── */}
         <div className="flex-1 min-w-0 flex flex-col glass-card rounded-xl border border-outline-variant/20 overflow-hidden">
-          <div className="p-4 border-b border-outline-variant/10 bg-surface-container-lowest shrink-0">
+          <div className="p-4 border-b border-outline-variant/10 bg-surface-container-lowest shrink-0 flex items-center justify-between">
             <h2 className="text-xs font-black uppercase tracking-widest text-[#dee1f7]/50 flex items-center gap-2">
               <Network className="w-3.5 h-3.5 text-primary-container" /> Architecture
             </h2>
+            {output && (
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="px-3 py-1.5 rounded-lg border border-primary-container/30 bg-primary-container/10 text-primary-container text-xs font-bold flex items-center gap-2 hover:bg-primary-container/20 transition-all disabled:opacity-50"
+              >
+                {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                {exporting ? 'Zipping...' : 'Download Project (.zip)'}
+              </button>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar p-5">

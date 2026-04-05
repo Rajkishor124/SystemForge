@@ -25,6 +25,13 @@ public interface PlaygroundService {
     /** Generate an architecture from config (cached + persisted) */
     PlaygroundGeneratedOutput generate(PlaygroundConfigRequest request);
 
-    /** Get the authenticated user's generation history */
+    /**
+     * Retrieves the generation history for the authenticated user.
+     */
     List<PlaygroundGeneratedOutput> getHistory();
+
+    /**
+     * Generates and bundles the configuration into a runnable Spring Boot ZIP project.
+     */
+    byte[] exportZip(PlaygroundConfigRequest request);
 }

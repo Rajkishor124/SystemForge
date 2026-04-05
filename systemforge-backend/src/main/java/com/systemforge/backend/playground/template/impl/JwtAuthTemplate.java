@@ -27,9 +27,39 @@ public class JwtAuthTemplate implements ServiceTemplate {
     public TemplateStructure getTemplateStructure() {
         return TemplateStructure.builder()
                 .controllerTemplate(CONTROLLER_TEMPLATE)
+                .controllerImports(java.util.Set.of(
+                        "org.springframework.web.bind.annotation.*",
+                        "org.springframework.http.ResponseEntity",
+                        "jakarta.validation.Valid",
+                        "lombok.RequiredArgsConstructor"
+                ))
                 .serviceTemplate(SERVICE_TEMPLATE)
+                .serviceImports(java.util.Set.of(
+                        "org.springframework.stereotype.Service",
+                        "org.springframework.security.authentication.BadCredentialsException",
+                        "org.springframework.security.crypto.password.PasswordEncoder",
+                        "lombok.RequiredArgsConstructor"
+                ))
                 .configTemplate(CONFIG_TEMPLATE)
+                .configImports(java.util.Set.of(
+                        "org.springframework.context.annotation.Configuration",
+                        "org.springframework.context.annotation.Bean",
+                        "org.springframework.beans.factory.annotation.Value",
+                        "org.springframework.security.crypto.password.PasswordEncoder",
+                        "org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"
+                ))
                 .securityTemplate(SECURITY_TEMPLATE)
+                .securityImports(java.util.Set.of(
+                        "org.springframework.context.annotation.Configuration",
+                        "org.springframework.security.config.annotation.web.configuration.EnableWebSecurity",
+                        "org.springframework.security.config.annotation.web.builders.HttpSecurity",
+                        "org.springframework.security.config.http.SessionCreationPolicy",
+                        "org.springframework.security.web.SecurityFilterChain",
+                        "org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter",
+                        "org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer",
+                        "org.springframework.context.annotation.Bean",
+                        "lombok.RequiredArgsConstructor"
+                ))
                 .build();
     }
 

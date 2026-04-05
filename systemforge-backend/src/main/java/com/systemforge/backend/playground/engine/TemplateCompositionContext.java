@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Structured composition context passed through the feature module pipeline.
@@ -36,6 +37,7 @@ public class TemplateCompositionContext {
 
     // ─── Additive lists: features append to these ──────────────────────────────
 
+    private final Set<String> imports;
     private final List<String> components;
     private final List<String> architectureSteps;
     private final List<String> techStack;
@@ -53,12 +55,23 @@ public class TemplateCompositionContext {
         this.serviceType = serviceType;
         this.variant = variant;
         this.placeholders = new LinkedHashMap<>(defaultPlaceholders);
+        this.imports = new java.util.TreeSet<>(); // Sorted alphabetically
         this.components = new ArrayList<>(defaultComponents);
         this.architectureSteps = new ArrayList<>();
         this.techStack = new ArrayList<>(defaultStack);
     }
 
     // ─── Mutation API for feature modules ──────────────────────────────────────
+
+    /**
+     * Adds a Java import statement to be injected at the top of the file.
+     * Example: {@code "org.springframework.security.access.prepost.PreAuthorize"}
+     */
+    public void addImport(String importStatement) {
+        if (importStatement != null && !importStatement.isBlank()) {
+            imports.add(importStatement);
+        }
+    }
 
     /**
      * Sets a placeholder value. Feature modules call this to inject code.

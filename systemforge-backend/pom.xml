@@ -73,6 +73,12 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 
+		<!-- CAFFEINE CACHE -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+
 		<!-- AOP -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
