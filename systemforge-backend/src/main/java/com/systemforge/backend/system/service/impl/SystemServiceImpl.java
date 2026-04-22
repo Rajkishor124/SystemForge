@@ -8,10 +8,12 @@ import com.systemforge.backend.common.enums.JobType;
 import com.systemforge.backend.common.enums.SystemType;
 import com.systemforge.backend.common.exception.BusinessException;
 import com.systemforge.backend.common.exception.ResourceNotFoundException;
+import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import com.systemforge.backend.recommendation.dto.RecommendationRequest;
 import com.systemforge.backend.recommendation.dto.RecommendationResult;
 import com.systemforge.backend.recommendation.service.RecommendationService;
 import com.systemforge.backend.system.dto.GenerationJobDto;
+import com.systemforge.backend.system.dto.GenerationProgressEvent;
 import com.systemforge.backend.system.dto.SystemDefinitionDto;
 import com.systemforge.backend.system.dto.UserSystemConfigDto;
 import com.systemforge.backend.system.dto.request.CreateSystemConfigRequest;
@@ -47,6 +49,7 @@ public class SystemServiceImpl implements SystemService {
     private final SystemMapper systemMapper;
     private final RecommendationService recommendationService;
     private final ObjectMapper objectMapper;
+    private final SseEmitterRegistry sseRegistry;
 
     // ─── System Catalog ───────────────────────────────────────────────────
 
@@ -199,12 +202,16 @@ public class SystemServiceImpl implements SystemService {
      * blocking Tomcat threads. MDC context (correlationId) is propagated
      * by the {@link com.systemforge.backend.common.config.AsyncConfig.MdcTaskDecorator}.
      *
+     * <p>Emits SSE events at each stage for real-time client progress.
+     * SSE is optional — if no listener is connected, events are silently dropped.
+     *
      * <p>On completion, updates the job record and the user's config.
      * On failure, records the error message in the job for client retrieval.
      */
     @Async("aiGenerationExecutor")
     public void executeGenerationAsync(UUID jobId) {
         log.info("[ASYNC] Starting generation for jobId={}", jobId);
+        final int TOTAL_STEPS = 3; // validate → generate → persist
 
         // Transition to PROCESSING
         GenerationJob job = jobRepository.findById(jobId).orElse(null);
@@ -218,11 +225,22 @@ public class SystemServiceImpl implements SystemService {
         jobRepository.save(job);
 
         try {
-            // Load the config
+            // ─── Step 1: Validate & Load Config ───────────────────────────
+            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, TOTAL_STEPS));
+            long stepStart = System.currentTimeMillis();
+
             UserSystemConfig config = configRepository.findById(job.getConfigId())
                     .orElseThrow(() -> new RuntimeException("Config not found: " + job.getConfigId()));
 
-            // Execute AI pipeline
+            long stepDuration = System.currentTimeMillis() - stepStart;
+            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
+                    "Config Validation", 1, TOTAL_STEPS, "Config loaded and validated", stepDuration));
+            sseRegistry.send(jobId, GenerationProgressEvent.progress(20));
+
+            // ─── Step 2: Execute AI Pipeline ──────────────────────────────
+            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("AI Generation", 2, TOTAL_STEPS));
+            stepStart = System.currentTimeMillis();
+
             RecommendationRequest aiRequest = RecommendationRequest.builder()
                     .appType(config.getAppType())
                     .scale(config.getAppScale())
@@ -231,16 +249,31 @@ public class SystemServiceImpl implements SystemService {
             RecommendationResult result = recommendationService.recommend(aiRequest);
             String outputJson = objectMapper.writeValueAsString(result);
 
-            // Update config with generated output
+            stepDuration = System.currentTimeMillis() - stepStart;
+            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
+                    "AI Generation", 2, TOTAL_STEPS, "Architecture generated", stepDuration));
+            sseRegistry.send(jobId, GenerationProgressEvent.progress(75));
+
+            // ─── Step 3: Persist Results ──────────────────────────────────
+            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Persisting Results", 3, TOTAL_STEPS));
+            stepStart = System.currentTimeMillis();
+
             config.setGeneratedOutputJson(outputJson);
             config.setGenerated(true);
             configRepository.save(config);
 
-            // Mark job as COMPLETED
             job.setStatus(JobStatus.COMPLETED);
             job.setResultJson(outputJson);
             job.setCompletedAt(LocalDateTime.now());
             jobRepository.save(job);
+
+            stepDuration = System.currentTimeMillis() - stepStart;
+            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
+                    "Persisting Results", 3, TOTAL_STEPS, "Results saved", stepDuration));
+
+            // ─── Final: Completed ─────────────────────────────────────────
+            sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
+            sseRegistry.complete(jobId);
 
             log.info("[ASYNC] Generation completed: jobId={}, durationMs={}",
                     jobId, java.time.Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis());
@@ -252,6 +285,10 @@ public class SystemServiceImpl implements SystemService {
             job.setErrorMessage(e.getMessage());
             job.setCompletedAt(LocalDateTime.now());
             jobRepository.save(job);
+
+            // Notify SSE listener of failure
+            sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), e.getMessage()));
+            sseRegistry.complete(jobId);
         }
     }
 

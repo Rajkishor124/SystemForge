@@ -1,5 +1,6 @@
 package com.systemforge.backend.common.config;
 
+import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,8 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Map;
@@ -27,12 +30,21 @@ import lombok.extern.slf4j.Slf4j;
  *       the HTTP request thread into the async worker thread</li>
  *   <li>CallerRunsPolicy — under extreme load, the calling thread runs the
  *       task itself rather than rejecting it (graceful degradation)</li>
+ *   <li>Scheduled pool stats logging — periodic visibility into thread utilization</li>
  * </ul>
  */
 @Configuration
 @EnableAsync
+@EnableScheduling
 @Slf4j
 public class AsyncConfig implements AsyncConfigurer {
+
+    private ThreadPoolTaskExecutor aiExecutor;
+    private final SseEmitterRegistry sseRegistry;
+
+    public AsyncConfig(SseEmitterRegistry sseRegistry) {
+        this.sseRegistry = sseRegistry;
+    }
 
     /**
      * Dedicated executor for AI generation tasks.
@@ -46,23 +58,41 @@ public class AsyncConfig implements AsyncConfigurer {
      */
     @Bean("aiGenerationExecutor")
     public Executor aiGenerationExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(50);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("ai-gen-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setTaskDecorator(new MdcTaskDecorator());
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(30);
-        executor.initialize();
-        return executor;
+        aiExecutor = new ThreadPoolTaskExecutor();
+        aiExecutor.setCorePoolSize(10);
+        aiExecutor.setMaxPoolSize(50);
+        aiExecutor.setQueueCapacity(100);
+        aiExecutor.setThreadNamePrefix("ai-gen-");
+        aiExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        aiExecutor.setTaskDecorator(new MdcTaskDecorator());
+        aiExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        aiExecutor.setAwaitTerminationSeconds(30);
+        aiExecutor.initialize();
+        return aiExecutor;
     }
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return (throwable, method, params) ->
                 log.error("[ASYNC] Uncaught exception in {}: {}", method.getName(), throwable.getMessage(), throwable);
+    }
+
+    // ─── Pool Stats Monitoring ────────────────────────────────────────────
+
+    /**
+     * Logs thread pool utilization every 60 seconds.
+     * Enables proactive detection of pool exhaustion before it causes 503s.
+     */
+    @Scheduled(fixedRate = 60_000, initialDelay = 30_000)
+    public void logPoolStats() {
+        if (aiExecutor == null) return;
+        ThreadPoolExecutor pool = aiExecutor.getThreadPoolExecutor();
+        log.info("[POOL_STATS] ai-gen: active={} pool={} queue={} completed={} sseConnections={}",
+                pool.getActiveCount(),
+                pool.getPoolSize(),
+                pool.getQueue().size(),
+                pool.getCompletedTaskCount(),
+                sseRegistry.activeCount());
     }
 
     /**

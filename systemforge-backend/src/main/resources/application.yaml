@@ -134,15 +134,51 @@ springdoc:
     display-request-duration: true
     try-it-out-enabled: true
 
-# ─── ACTUATOR (Future monitoring) ───────────────────────────────────────────
+# ─── RESILIENCE4J ───────────────────────────────────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      openai:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 3
+        slow-call-duration-threshold: 45s
+        slow-call-rate-threshold: 80
+        record-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+          - java.lang.RuntimeException
+        ignore-exceptions:
+          - java.lang.IllegalArgumentException
+          - jakarta.validation.ValidationException
+  retry:
+    instances:
+      openai:
+        max-attempts: 3
+        wait-duration: 2s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.net.SocketTimeoutException
+          - java.net.ConnectException
+          - java.io.IOException
+
+# ─── ACTUATOR (Production Monitoring) ───────────────────────────────────────
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,circuitbreakers,circuitbreakerevents
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    circuitbreakers:
+      enabled: true
 
 # ─── LOGGING ────────────────────────────────────────────────────────────────
 logging:
@@ -151,6 +187,7 @@ logging:
     com.systemforge: DEBUG
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
+    io.github.resilience4j: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"
