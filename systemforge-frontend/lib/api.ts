@@ -17,6 +17,7 @@ export interface ApiResponse<T = unknown> {
   data: T;
   timestamp: string;
   correlationId?: string;
+  errorCode?: string;
 }
 
 export interface AuthUser {
@@ -94,7 +95,8 @@ async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
 
   if (!response.ok || (json && !json.success)) {
     const message = json?.message || `Request failed with status ${response.status}`;
-    const error = new ApiError(message, response.status, json || undefined);
+    const errorCode = json?.errorCode;
+    const error = new ApiError(message, response.status, json || undefined, errorCode);
     throw error;
   }
 
@@ -139,11 +141,13 @@ async function tryRefreshToken(): Promise<boolean> {
 export class ApiError extends Error {
   status: number;
   response?: ApiResponse<any>;
+  errorCode?: string;
 
-  constructor(message: string, status: number, response?: ApiResponse<any>) {
+  constructor(message: string, status: number, response?: ApiResponse<any>, errorCode?: string) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.response = response;
+    this.errorCode = errorCode;
   }
 }

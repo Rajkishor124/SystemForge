@@ -2,6 +2,7 @@ services:
   systemforge-db:
     image: postgres:15-alpine
     container_name: systemforge-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: system_forge_user
       POSTGRES_PASSWORD: my_secure_password
@@ -15,26 +16,36 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   systemforge-redis:
     image: redis:7-alpine
     container_name: systemforge-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --save 60 1 --loglevel warning
+    command: redis-server --save 60 1 --loglevel warning --maxmemory 256mb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   systemforge-backend:
     build: 
       context: ./systemforge-backend
       dockerfile: Dockerfile
     container_name: systemforge-backend
+    restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
@@ -54,19 +65,29 @@ services:
         condition: service_healthy
       systemforge-redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   systemforge-frontend:
     build:
       context: ./systemforge-frontend
       dockerfile: Dockerfile
     container_name: systemforge-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       # Internal Docker network routing to backend container
       - NEXT_PUBLIC_API_URL=http://systemforge-backend:8080
     depends_on:
-      - systemforge-backend
+      systemforge-backend:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 volumes:
   postgres_data:

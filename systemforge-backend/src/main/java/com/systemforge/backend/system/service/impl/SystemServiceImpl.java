@@ -8,6 +8,7 @@ import com.systemforge.backend.common.enums.JobType;
 import com.systemforge.backend.common.enums.SystemType;
 import com.systemforge.backend.common.exception.BusinessException;
 import com.systemforge.backend.common.exception.ResourceNotFoundException;
+import com.systemforge.backend.common.security.InputSanitizer;
 import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import com.systemforge.backend.recommendation.dto.RecommendationRequest;
 import com.systemforge.backend.recommendation.dto.RecommendationResult;
@@ -79,10 +80,10 @@ public class SystemServiceImpl implements SystemService {
         
         UserSystemConfig config = UserSystemConfig.builder()
                 .userId(userId)
-                .configName(request.getConfigName())
+                .configName(InputSanitizer.sanitize(request.getConfigName()))
                 .appType(request.getAppType())
                 .appScale(request.getAppScale())
-                .selectedSystemsJson(request.getSelectedSystemsJson())
+                .selectedSystemsJson(InputSanitizer.sanitizeMultiline(request.getSelectedSystemsJson()))
                 .build();
                 
         // builder.default is not always respected perfectly by mapstruct, but for entity builder it works ok,

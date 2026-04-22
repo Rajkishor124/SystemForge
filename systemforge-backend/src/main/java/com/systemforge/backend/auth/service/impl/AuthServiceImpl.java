@@ -15,6 +15,7 @@ import com.systemforge.backend.common.enums.UserRole;
 import com.systemforge.backend.common.exception.BusinessException;
 import com.systemforge.backend.common.exception.DuplicateResourceException;
 import com.systemforge.backend.common.exception.ResourceNotFoundException;
+import com.systemforge.backend.common.security.InputSanitizer;
 import com.systemforge.backend.notification.service.NotificationService;
 import com.systemforge.backend.user.entity.User;
 import com.systemforge.backend.user.enums.AccountStatus;
@@ -62,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = User.builder()
-                .name(request.getName())
+                .name(InputSanitizer.sanitize(request.getName()))
                 .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(UserRole.DEVELOPER)
