@@ -5,7 +5,9 @@ import com.systemforge.backend.common.enums.JobStatus;
 import com.systemforge.backend.common.enums.JobType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -23,6 +25,8 @@ import java.util.UUID;
  *   <li>{@code sessionId} is nullable — system generation jobs don't have a session</li>
  *   <li>{@code resultJson} stores the full output; a future optimization may
  *       store a reference to an external blob store for very large payloads</li>
+ *   <li>{@code mabaMetadata} (JSONB) stores per-agent execution data for
+ *       cost auditing, performance debugging, and failure forensics</li>
  * </ul>
  */
 @Entity
@@ -73,4 +77,13 @@ public class GenerationJob extends BaseEntity {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    /**
+     * MABA pipeline execution metadata stored as JSONB.
+     * Contains per-agent token usage, timing, status, and pipeline traceId.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "maba_metadata", columnDefinition = "jsonb")
+    private String mabaMetadata;
 }
+

@@ -227,6 +227,8 @@ public class SystemServiceImpl implements SystemService {
         job.setStartedAt(LocalDateTime.now());
         jobRepository.save(job);
 
+        MabaContext mabaContext = null;
+
         try {
             // ─── Step 1: Validate & Load Config ───────────────────────────
             sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, 8));
@@ -244,7 +246,7 @@ public class SystemServiceImpl implements SystemService {
             // Build user requirements string from the config for the multi-agent pipeline
             String userRequirements = buildRequirementsFromConfig(config);
 
-            MabaContext mabaContext = new MabaContext(userRequirements);
+            mabaContext = new MabaContext(userRequirements);
             mabaContext.setUserId(job.getUserId());
             mabaContext.setJobId(jobId);
 
@@ -269,6 +271,7 @@ public class SystemServiceImpl implements SystemService {
 
             job.setStatus(JobStatus.COMPLETED);
             job.setResultJson(outputJson);
+            job.setMabaMetadata(mabaContext.toMetadataJson());
             job.setCompletedAt(LocalDateTime.now());
             jobRepository.save(job);
 
@@ -290,6 +293,9 @@ public class SystemServiceImpl implements SystemService {
 
             job.setStatus(JobStatus.FAILED);
             job.setErrorMessage(e.getMessage());
+            if (mabaContext != null) {
+                job.setMabaMetadata(mabaContext.toMetadataJson());
+            }
             job.setCompletedAt(LocalDateTime.now());
             jobRepository.save(job);
 
@@ -310,6 +316,7 @@ public class SystemServiceImpl implements SystemService {
                 .status(job.getStatus())
                 .resultJson(job.getResultJson())
                 .errorMessage(job.getErrorMessage())
+                .mabaMetadata(job.getMabaMetadata())
                 .startedAt(job.getStartedAt())
                 .completedAt(job.getCompletedAt())
                 .createdAt(job.getCreatedAt())

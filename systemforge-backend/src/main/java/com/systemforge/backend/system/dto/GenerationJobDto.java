@@ -27,6 +27,7 @@ public class GenerationJobDto {
     private JobStatus status;
     private String resultJson;
     private String errorMessage;
+    private String mabaMetadata;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
     private LocalDateTime createdAt;

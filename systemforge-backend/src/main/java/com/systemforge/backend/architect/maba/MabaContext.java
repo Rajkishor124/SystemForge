@@ -136,4 +136,51 @@ public class MabaContext {
         }
         return sb.toString();
     }
+
+    // ─── Persistence ──────────────────────────────────────────────────────
+
+    /**
+     * Serialize pipeline execution metadata to a JSON string
+     * for storage in {@code generation_jobs.maba_metadata}.
+     *
+     * <p>Manually constructed to avoid a Jackson dependency in this DTO layer.
+     */
+    public String toMetadataJson() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"traceId\":\"").append(traceId).append("\",");
+        sb.append("\"status\":\"").append(status).append("\",");
+        sb.append("\"totalDurationMs\":").append(getElapsedMs()).append(",");
+        sb.append("\"totalPromptTokens\":").append(getTotalPromptTokens()).append(",");
+        sb.append("\"totalCompletionTokens\":").append(getTotalCompletionTokens()).append(",");
+        sb.append("\"agents\":[");
+
+        boolean first = true;
+        for (Map.Entry<AgentRole, AgentOutput> entry : agentOutputs.entrySet()) {
+            if (!first) sb.append(",");
+            first = false;
+            AgentOutput o = entry.getValue();
+            sb.append("{");
+            sb.append("\"role\":\"").append(entry.getKey().name()).append("\",");
+            sb.append("\"roleName\":\"").append(escapeJson(entry.getKey().getRoleName())).append("\",");
+            sb.append("\"status\":\"").append(o.getStatus()).append("\",");
+            sb.append("\"durationMs\":").append(o.getDurationMs()).append(",");
+            sb.append("\"promptTokens\":").append(o.getPromptTokens()).append(",");
+            sb.append("\"completionTokens\":").append(o.getCompletionTokens()).append(",");
+            sb.append("\"fallback\":").append(o.isFallback());
+            sb.append("}");
+        }
+
+        sb.append("]");
+        if (failureReason != null) {
+            sb.append(",\"failureReason\":\"").append(escapeJson(failureReason)).append("\"");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+    }
 }
