@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
+import { useAuth } from '@/lib/auth-context';
 
 export interface InAppNotification {
   id: string;
@@ -19,6 +20,7 @@ export interface InAppNotification {
 
 export function NotificationBell() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -39,17 +41,19 @@ export function NotificationBell() {
 
   // Fetch unread count on mount and every minute
   useEffect(() => {
+    if (!isAuthenticated) return;
+    
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
 
   // Fetch notifications when opening the dropdown
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isAuthenticated) {
       fetchNotifications();
     }
-  }, [isOpen]);
+  }, [isOpen, isAuthenticated]);
 
   async function fetchUnreadCount() {
     try {
