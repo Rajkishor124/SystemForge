@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Network, Download, Share, CheckCircle, Server, Database, Shield, Zap, ArrowRight, Loader2, AlertCircle, Lightbulb, AlertTriangle, ChevronRight } from 'lucide-react';
+import { Network, Download, Share, CheckCircle, Server, Database, Shield, Zap, ArrowRight, Loader2, AlertCircle, Lightbulb, AlertTriangle, ChevronRight, FileText, Copy } from 'lucide-react';
 import { api, ApiError } from '@/lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -71,7 +71,9 @@ export default function ResultPage() {
 
   const [config, setConfig] = useState<SystemConfig | null>(null);
   const [result, setResult] = useState<RecommendationResult | null>(null);
+  const [mabaMarkdown, setMabaMarkdown] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -97,8 +99,20 @@ export default function ResultPage() {
         setConfig(res.data);
 
         if (res.data.generatedOutputJson) {
-          const parsed: RecommendationResult = JSON.parse(res.data.generatedOutputJson);
-          setResult(parsed);
+          const raw = res.data.generatedOutputJson;
+          // Detect MABA markdown vs legacy JSON
+          if (raw.trim().startsWith('{') || raw.trim().startsWith('[')) {
+            try {
+              const parsed: RecommendationResult = JSON.parse(raw);
+              setResult(parsed);
+            } catch {
+              // If JSON parse fails, treat as markdown
+              setMabaMarkdown(raw);
+            }
+          } else {
+            // MABA output is raw markdown
+            setMabaMarkdown(raw);
+          }
         }
       } catch (err) {
         if (err instanceof ApiError) {
@@ -196,7 +210,14 @@ export default function ResultPage() {
         </div>
       </motion.div>
 
-      {result ? (
+      {/* MABA Document Renderer */}
+      {mabaMarkdown ? (
+        <MabaDocumentView markdown={mabaMarkdown} configName={config.configName} copied={copied} onCopy={async () => {
+          await navigator.clipboard.writeText(mabaMarkdown);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }} />
+      ) : result ? (
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* Executive Summary */}
@@ -351,6 +372,126 @@ export default function ResultPage() {
           </Link>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── MABA Document View ─────────────────────────────────────────────────────────
+
+const SECTION_COLORS: Record<string, string> = {
+  'EXECUTIVE SUMMARY': '#ff6b35',
+  'REQUIREMENT': '#a855f7',
+  'ARCHITECTURE': '#00c9ff',
+  'DATA': '#22c55e',
+  'API': '#06b6d4',
+  'SCALABILITY': '#f59e0b',
+  'SECURITY': '#ef4444',
+  'IMPLEMENTATION': '#ec4899',
+  'ASSUMPTION': '#8b5cf6',
+  'OPEN QUESTIONS': '#f97316',
+  'FUTURE': '#14b8a6',
+};
+
+function getSectionColor(title: string): string {
+  const upper = title.toUpperCase();
+  for (const [key, color] of Object.entries(SECTION_COLORS)) {
+    if (upper.includes(key)) return color;
+  }
+  return '#00f2ff';
+}
+
+function MabaDocumentView({ markdown, configName, copied, onCopy }: {
+  markdown: string;
+  configName: string;
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  // Parse markdown into sections by ## headers
+  const sections: { title: string; content: string }[] = [];
+  const lines = markdown.split('\n');
+  let currentTitle = '';
+  let currentContent: string[] = [];
+
+  for (const line of lines) {
+    if (line.startsWith('## ')) {
+      if (currentTitle || currentContent.length > 0) {
+        sections.push({ title: currentTitle, content: currentContent.join('\n').trim() });
+      }
+      currentTitle = line.replace(/^##\s*\d*\.?\s*/, '').trim();
+      currentContent = [];
+    } else {
+      currentContent.push(line);
+    }
+  }
+  if (currentTitle || currentContent.length > 0) {
+    sections.push({ title: currentTitle, content: currentContent.join('\n').trim() });
+  }
+
+  // Separate preamble (before first ##) from actual sections
+  const preamble = sections.length > 0 && !sections[0].title ? sections.shift()?.content : null;
+
+  return (
+    <div className="space-y-6">
+      {/* Document header badge */}
+      {preamble && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-2xl p-6 border-[#ff6b35]/20 bg-gradient-to-br from-[#ff6b35]/5 to-transparent"
+        >
+          <pre className="text-xs text-[#dee1f7]/60 font-mono whitespace-pre-wrap leading-relaxed">{preamble}</pre>
+        </motion.div>
+      )}
+
+      {/* Copy button */}
+      <div className="flex justify-end">
+        <button
+          onClick={onCopy}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            copied
+              ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+              : 'bg-white/5 border border-white/10 text-[#dee1f7]/60 hover:bg-white/10'
+          }`}
+        >
+          {copied ? <CheckCircle className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copied ? 'Copied!' : 'Copy Document'}
+        </button>
+      </div>
+
+      {/* Sections */}
+      {sections.map((section, i) => {
+        const color = getSectionColor(section.title);
+        return (
+          <motion.section
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 * i }}
+            className="glass-card rounded-2xl overflow-hidden border-white/5 hover:border-white/10 transition-colors"
+          >
+            {/* Section header */}
+            <div
+              className="px-6 py-4 flex items-center gap-3"
+              style={{ borderBottom: `1px solid ${color}22`, background: `${color}08` }}
+            >
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black"
+                style={{ background: `${color}22`, border: `1px solid ${color}44`, color }}
+              >
+                {i + 1}
+              </div>
+              <h2 className="text-base font-bold font-headline text-[#e1fdff]">{section.title}</h2>
+            </div>
+
+            {/* Section content */}
+            <div className="px-6 py-5">
+              <pre className="text-sm text-[#dee1f7]/80 font-mono whitespace-pre-wrap leading-relaxed break-words">
+                {section.content}
+              </pre>
+            </div>
+          </motion.section>
+        );
+      })}
     </div>
   );
 }
