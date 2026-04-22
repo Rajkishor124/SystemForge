@@ -36,8 +36,9 @@ public class LlmConfig {
     @ConditionalOnProperty(name = "llm.provider", havingValue = "openai", matchIfMissing = true)
     public LlmClient openAiClient(OpenAIClient openAIClient,
                                   CircuitBreakerRegistry cbRegistry,
-                                  RetryRegistry retryRegistry) {
-        OpenAiLlmClient rawClient = new OpenAiLlmClient(openAIClient);
+                                  RetryRegistry retryRegistry,
+                                  @org.springframework.beans.factory.annotation.Value("${openai.model:gpt-4}") String modelName) {
+        OpenAiLlmClient rawClient = new OpenAiLlmClient(openAIClient, modelName);
         log.info("[LLM_CONFIG] Registering ResilientLlmClient wrapping OpenAI (circuit breaker + retry enabled)");
         return new ResilientLlmClient(rawClient, cbRegistry, retryRegistry);
     }

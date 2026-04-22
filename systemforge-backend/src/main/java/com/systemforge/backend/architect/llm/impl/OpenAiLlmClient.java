@@ -23,15 +23,11 @@ import org.springframework.beans.factory.annotation.Value;
 public class OpenAiLlmClient implements LlmClient {
 
     private final OpenAIClient openAIClient;
+    private final String modelName;
 
-    @Value("${openai.model:gpt-4}")
-    private String modelName;
-
-    @Value("${architect.llm.timeout-seconds:60}")
-    private int timeoutSeconds;
-
-    public OpenAiLlmClient(OpenAIClient openAIClient) {
+    public OpenAiLlmClient(OpenAIClient openAIClient, String modelName) {
         this.openAIClient = openAIClient;
+        this.modelName = modelName;
     }
 
     @Override
