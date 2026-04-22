@@ -12,6 +12,8 @@ server:
   max-http-request-header-size: 16KB
 
 spring:
+  profiles:
+    active: dev
   application:
     name: systemforge-backend
   main:
