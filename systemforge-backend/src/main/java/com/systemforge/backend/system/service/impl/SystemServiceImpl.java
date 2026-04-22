@@ -10,6 +10,8 @@ import com.systemforge.backend.common.exception.BusinessException;
 import com.systemforge.backend.common.exception.ResourceNotFoundException;
 import com.systemforge.backend.common.security.InputSanitizer;
 import com.systemforge.backend.common.sse.SseEmitterRegistry;
+import com.systemforge.backend.architect.maba.MabaContext;
+import com.systemforge.backend.architect.maba.MabaOrchestrator;
 import com.systemforge.backend.recommendation.dto.RecommendationRequest;
 import com.systemforge.backend.recommendation.dto.RecommendationResult;
 import com.systemforge.backend.recommendation.service.RecommendationService;
@@ -51,6 +53,7 @@ public class SystemServiceImpl implements SystemService {
     private final RecommendationService recommendationService;
     private final ObjectMapper objectMapper;
     private final SseEmitterRegistry sseRegistry;
+    private final MabaOrchestrator mabaOrchestrator;
 
     // ─── System Catalog ───────────────────────────────────────────────────
 
@@ -211,8 +214,7 @@ public class SystemServiceImpl implements SystemService {
      */
     @Async("aiGenerationExecutor")
     public void executeGenerationAsync(UUID jobId) {
-        log.info("[ASYNC] Starting generation for jobId={}", jobId);
-        final int TOTAL_STEPS = 3; // validate → generate → persist
+        log.info("[ASYNC] Starting MABA generation for jobId={}", jobId);
 
         // Transition to PROCESSING
         GenerationJob job = jobRepository.findById(jobId).orElse(null);
@@ -227,7 +229,7 @@ public class SystemServiceImpl implements SystemService {
 
         try {
             // ─── Step 1: Validate & Load Config ───────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, TOTAL_STEPS));
+            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, 8));
             long stepStart = System.currentTimeMillis();
 
             UserSystemConfig config = configRepository.findById(job.getConfigId())
@@ -235,28 +237,30 @@ public class SystemServiceImpl implements SystemService {
 
             long stepDuration = System.currentTimeMillis() - stepStart;
             sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
-                    "Config Validation", 1, TOTAL_STEPS, "Config loaded and validated", stepDuration));
-            sseRegistry.send(jobId, GenerationProgressEvent.progress(20));
+                    "Config Validation", 1, 8, "Config loaded and validated", stepDuration));
+            sseRegistry.send(jobId, GenerationProgressEvent.progress(5));
 
-            // ─── Step 2: Execute AI Pipeline ──────────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("AI Generation", 2, TOTAL_STEPS));
-            stepStart = System.currentTimeMillis();
+            // ─── Step 2: Execute MABA Pipeline ────────────────────────────
+            // Build user requirements string from the config for the multi-agent pipeline
+            String userRequirements = buildRequirementsFromConfig(config);
 
-            RecommendationRequest aiRequest = RecommendationRequest.builder()
-                    .appType(config.getAppType())
-                    .scale(config.getAppScale())
-                    .build();
+            MabaContext mabaContext = new MabaContext(userRequirements);
+            mabaContext.setUserId(job.getUserId());
+            mabaContext.setJobId(jobId);
 
-            RecommendationResult result = recommendationService.recommend(aiRequest);
-            String outputJson = objectMapper.writeValueAsString(result);
+            // This runs all 7 phases (Orchestrator → RAG + Requirements → Architect →
+            // DB + API → Scale + Security → Planning → Synthesis)
+            // SSE events are emitted by the MabaOrchestrator at each phase boundary
+            mabaOrchestrator.execute(mabaContext);
 
-            stepDuration = System.currentTimeMillis() - stepStart;
-            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
-                    "AI Generation", 2, TOTAL_STEPS, "Architecture generated", stepDuration));
-            sseRegistry.send(jobId, GenerationProgressEvent.progress(75));
+            if ("FAILED".equals(mabaContext.getStatus())) {
+                throw new RuntimeException("MABA pipeline failed: " + mabaContext.getFailureReason());
+            }
+
+            String outputJson = mabaContext.getFinalDocument();
 
             // ─── Step 3: Persist Results ──────────────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Persisting Results", 3, TOTAL_STEPS));
+            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Persisting Results", 8, 8));
             stepStart = System.currentTimeMillis();
 
             config.setGeneratedOutputJson(outputJson);
@@ -270,14 +274,16 @@ public class SystemServiceImpl implements SystemService {
 
             stepDuration = System.currentTimeMillis() - stepStart;
             sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
-                    "Persisting Results", 3, TOTAL_STEPS, "Results saved", stepDuration));
+                    "Persisting Results", 8, 8, "Results saved", stepDuration));
 
             // ─── Final: Completed ─────────────────────────────────────────
             sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
             sseRegistry.complete(jobId);
 
-            log.info("[ASYNC] Generation completed: jobId={}, durationMs={}",
-                    jobId, java.time.Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis());
+            log.info("[ASYNC] MABA generation completed: jobId={}, durationMs={}, totalTokens={}",
+                    jobId,
+                    java.time.Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis(),
+                    mabaContext.getTotalPromptTokens() + mabaContext.getTotalCompletionTokens());
 
         } catch (Exception e) {
             log.error("[ASYNC] Generation failed for jobId={}: {}", jobId, e.getMessage(), e);
@@ -308,5 +314,25 @@ public class SystemServiceImpl implements SystemService {
                 .completedAt(job.getCompletedAt())
                 .createdAt(job.getCreatedAt())
                 .build();
+    }
+
+    // ─── Config → Requirements Builder ──────────────────────────────────
+
+    /**
+     * Converts a stored UserSystemConfig into a natural-language requirements
+     * string for the MABA pipeline input.
+     */
+    private String buildRequirementsFromConfig(UserSystemConfig config) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Design a backend system with the following specifications:\n\n");
+        sb.append("Application Name: ").append(config.getConfigName()).append("\n");
+        sb.append("Application Type: ").append(config.getAppType()).append("\n");
+        sb.append("Application Scale: ").append(config.getAppScale()).append("\n");
+
+        if (config.getSelectedSystemsJson() != null && !config.getSelectedSystemsJson().isBlank()) {
+            sb.append("\nSelected Systems/Features:\n").append(config.getSelectedSystemsJson()).append("\n");
+        }
+
+        return sb.toString();
     }
 }
