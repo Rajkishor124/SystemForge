@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +22,27 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * JWT authentication filter — extracts and validates access tokens.
+ *
+ * <p>Token extraction priority:
+ * <ol>
+ *   <li>HttpOnly cookie {@code sf_access_token} (browser clients)</li>
+ *   <li>Authorization header {@code Bearer <token>} (API clients, Swagger, Postman)</li>
+ * </ol>
+ *
+ * <p>This dual-source approach ensures backward compatibility for non-browser
+ * API consumers while securing browser sessions with HttpOnly cookies.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String ACCESS_COOKIE       = "sf_access_token";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-    private static final String ROLE_PREFIX = "ROLE_";
+    private static final String BEARER_PREFIX        = "Bearer ";
+    private static final String ROLE_PREFIX          = "ROLE_";
 
     private final JwtService jwtService;
 
@@ -47,8 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // 2. Extract token
-            String token = extractBearerToken(request);
+            // 2. Extract token (cookie-first, header fallback)
+            String token = extractToken(request);
 
             if (token == null) {
                 filterChain.doFilter(request, response);
@@ -98,7 +112,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String extractBearerToken(HttpServletRequest request) {
+    /**
+     * Extracts the access token using cookie-first, header-fallback strategy.
+     *
+     * <p>Cookie-first is preferred because HttpOnly cookies cannot be stolen
+     * via XSS, unlike Authorization headers which require JavaScript access
+     * to the token value.
+     */
+    private String extractToken(HttpServletRequest request) {
+        // 1. Try HttpOnly cookie (browser clients)
+        String cookieToken = extractFromCookie(request);
+        if (cookieToken != null) {
+            return cookieToken;
+        }
+
+        // 2. Fallback: Authorization header (API clients, Swagger, mobile)
+        return extractFromHeader(request);
+    }
+
+    private String extractFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if (ACCESS_COOKIE.equals(cookie.getName()) && StringUtils.hasText(cookie.getValue())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String extractFromHeader(HttpServletRequest request) {
         String header = request.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(header) && header.startsWith(BEARER_PREFIX)) {
             return header.substring(BEARER_PREFIX.length());

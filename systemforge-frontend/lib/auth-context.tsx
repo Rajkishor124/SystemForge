@@ -11,11 +11,8 @@ import {
 import { useRouter } from 'next/navigation';
 import {
   api,
-  storeTokens,
-  getStoredTokens,
-  clearTokens,
   ApiError,
-  type AuthTokens,
+  type AuthUser,
 } from './api';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -49,37 +46,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
   });
 
+  /**
+   * Hydrate auth state on mount by calling GET /auth/me.
+   *
+   * This replaces the old localStorage-based hydration. The browser
+   * automatically sends the HttpOnly access_token cookie, and the
+   * backend returns userId + role if the session is valid.
+   */
   useEffect(() => {
-    const stored = getStoredTokens();
-    if (stored?.accessToken && stored.user) {
-      setState({
-        user: {
-          userId: stored.user.userId,
-          role: stored.user.role,
-        },
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } else {
-      setState({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
+    let cancelled = false;
+
+    async function hydrate() {
+      try {
+        const res = await api<AuthUser>('/api/v1/auth/me');
+        if (!cancelled && res.data) {
+          setState({
+            user: { userId: res.data.userId, role: res.data.role },
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        }
+      } catch {
+        // No valid session — user is not authenticated
+        if (!cancelled) {
+          setState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
+      }
     }
+
+    hydrate();
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const res = await api<AuthTokens>('/api/v1/auth/login', {
+      // Backend sets HttpOnly cookies via Set-Cookie headers
+      const res = await api<AuthUser>('/api/v1/auth/login', {
         method: 'POST',
         body: { email, password },
         skipAuth: true,
       });
 
       const auth = res.data;
-      storeTokens(auth);
-
       setState({
         user: { userId: auth.userId, role: auth.role },
         isAuthenticated: true,
@@ -91,15 +103,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (name: string, email: string, password: string) => {
-      const res = await api<AuthTokens>('/api/v1/auth/register', {
+      // Backend sets HttpOnly cookies via Set-Cookie headers
+      const res = await api<AuthUser>('/api/v1/auth/register', {
         method: 'POST',
         body: { name, email, password },
         skipAuth: true,
       });
 
       const auth = res.data;
-      storeTokens(auth);
-
       setState({
         user: { userId: auth.userId, role: auth.role },
         isAuthenticated: true,
@@ -111,11 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
+      // Backend clears cookies via Set-Cookie with maxAge=0
       await api('/api/v1/auth/logout', { method: 'POST' });
     } catch {
       // Even if the server call fails, clear local state
     }
-    clearTokens();
     setState({
       user: null,
       isAuthenticated: false,

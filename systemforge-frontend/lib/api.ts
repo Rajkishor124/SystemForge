@@ -1,9 +1,12 @@
 /**
  * Centralized API client for SystemForge backend.
  *
- * - Injects Authorization header from localStorage tokens
- * - Auto-refreshes on 401 (one retry)
- * - Returns typed ApiResponse<T> matching the backend envelope
+ * Security model (post-hardening):
+ * - Access token is stored in an HttpOnly cookie (set by the backend)
+ * - Refresh token is stored in a path-scoped HttpOnly cookie
+ * - Frontend NEVER handles raw JWT strings
+ * - All requests use `credentials: 'include'` to send cookies automatically
+ * - Token refresh is handled transparently on 401
  */
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -16,52 +19,11 @@ export interface ApiResponse<T = unknown> {
   correlationId?: string;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string;
-  accessTokenExpiresAt: string;
+export interface AuthUser {
   userId: string;
   role: string;
-}
-
-// ─── Storage keys ───────────────────────────────────────────────────────────────
-
-const TOKEN_KEY = 'sf_access_token';
-const REFRESH_KEY = 'sf_refresh_token';
-const USER_KEY = 'sf_user';
-
-export function getStoredTokens() {
-  if (typeof window === 'undefined') return null;
-  const accessToken = localStorage.getItem(TOKEN_KEY);
-  const refreshToken = localStorage.getItem(REFRESH_KEY);
-  const user = localStorage.getItem(USER_KEY);
-  if (!accessToken) return null;
-  return {
-    accessToken,
-    refreshToken: refreshToken || '',
-    user: user ? JSON.parse(user) : null,
-  };
-}
-
-export function storeTokens(auth: AuthTokens) {
-  localStorage.setItem(TOKEN_KEY, auth.accessToken);
-  localStorage.setItem(REFRESH_KEY, auth.refreshToken);
-  localStorage.setItem(
-    USER_KEY,
-    JSON.stringify({
-      userId: auth.userId,
-      role: auth.role,
-      tokenType: auth.tokenType,
-      accessTokenExpiresAt: auth.accessTokenExpiresAt,
-    })
-  );
-}
-
-export function clearTokens() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REFRESH_KEY);
-  localStorage.removeItem(USER_KEY);
+  tokenType?: string;
+  accessTokenExpiresAt?: string;
 }
 
 // ─── Base fetch ─────────────────────────────────────────────────────────────────
@@ -77,7 +39,7 @@ let isRefreshing = false;
 
 /**
  * Generic API call. Returns `ApiResponse<T>`.
- * Automatically injects auth header and retries once on 401.
+ * Automatically sends cookies and retries once on 401 (token refresh).
  */
 export async function api<T = unknown>(
   path: string,
@@ -90,41 +52,29 @@ export async function api<T = unknown>(
     ...(rest.headers as Record<string, string>),
   };
 
-  // Inject auth token unless explicitly skipped
-  if (!skipAuth) {
-    const stored = getStoredTokens();
-    if (stored?.accessToken) {
-      headers['Authorization'] = `Bearer ${stored.accessToken}`;
-    }
-  }
-
   const url = `${BASE_URL}${path}`;
 
   const response = await fetch(url, {
     ...rest,
     headers,
+    credentials: 'include', // Send HttpOnly cookies with every request
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // 401 → attempt token refresh (once)
+  // 401 → attempt cookie-based token refresh (once)
   if (response.status === 401 && !skipAuth && !isRefreshing) {
     const refreshed = await tryRefreshToken();
     if (refreshed) {
-      // Retry original request with new token
-      const newStored = getStoredTokens();
-      if (newStored?.accessToken) {
-        headers['Authorization'] = `Bearer ${newStored.accessToken}`;
-      }
+      // Retry original request — fresh cookie is already set by the refresh response
       const retryResponse = await fetch(url, {
         ...rest,
         headers,
+        credentials: 'include',
         body: body ? JSON.stringify(body) : undefined,
       });
       return handleResponse<T>(retryResponse);
-    } else {
-      // Refresh failed — clear tokens, let caller handle
-      clearTokens();
     }
+    // Refresh failed — let caller handle the 401
   }
 
   return handleResponse<T>(response);
@@ -149,8 +99,6 @@ async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   }
 
   if (!json) {
-    // If we're here, response.ok is true but no JSON was parsed
-    // Return a dummy success wrapper if no data expected, or throw if data required
     return {
       success: true,
       message: 'Resource processed successfully',
@@ -162,28 +110,23 @@ async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   return json;
 }
 
+/**
+ * Attempts to refresh the session via the HttpOnly refresh cookie.
+ * The backend reads the cookie automatically — no token in the body.
+ */
 async function tryRefreshToken(): Promise<boolean> {
   isRefreshing = true;
   try {
-    const stored = getStoredTokens();
-    if (!stored?.refreshToken) return false;
-
     const response = await fetch(`${BASE_URL}/api/v1/auth/refresh`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Refresh-Token': stored.refreshToken,
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Sends the sf_refresh_token cookie
     });
 
     if (!response.ok) return false;
 
-    const json: ApiResponse<AuthTokens> = await response.json();
-    if (json.success && json.data) {
-      storeTokens(json.data);
-      return true;
-    }
-    return false;
+    const json: ApiResponse<AuthUser> = await response.json();
+    return json.success;
   } catch {
     return false;
   } finally {

@@ -109,6 +109,19 @@ app:
     refresh-token-expiry-ms: 604800000   # 7 days
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  rate-limit:
+    otp:
+      capacity: 5
+      refill-minutes: 15
+    login:
+      capacity: 10
+      refill-minutes: 5
+    generate:
+      capacity: 3
+      refill-minutes: 60
+    architect-chat:
+      capacity: 10
+      refill-minutes: 10
 
 # ─── SPRINGDOC / SWAGGER ────────────────────────────────────────────────────
 springdoc:

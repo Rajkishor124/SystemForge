@@ -4,6 +4,7 @@ import com.systemforge.backend.auth.service.SecurityService;
 import com.systemforge.backend.common.dto.ApiResponse;
 import com.systemforge.backend.common.dto.PagedResponse;
 import com.systemforge.backend.common.enums.SystemType;
+import com.systemforge.backend.system.dto.GenerationJobDto;
 import com.systemforge.backend.system.dto.SystemDefinitionDto;
 import com.systemforge.backend.system.dto.UserSystemConfigDto;
 import com.systemforge.backend.system.dto.request.CreateSystemConfigRequest;
@@ -85,15 +86,42 @@ public class SystemController {
     }
 
     @PostMapping("/configs/{configId}/generate")
-    @Operation(summary = "Trigger generation", description = "Generate architecture topology and configuration payloads via AI")
-    public ResponseEntity<ApiResponse<UserSystemConfigDto>> generateArchitecture(
+    @Operation(
+            summary = "Trigger async generation",
+            description = """
+                    Submit an architecture generation request for async processing.
+                    Returns 202 Accepted with a jobId immediately.
+                    Poll GET /api/v1/systems/jobs/{jobId} for progress and results.
+                    """
+    )
+    public ResponseEntity<ApiResponse<GenerationJobDto>> generateArchitecture(
             @PathVariable UUID configId) {
 
         UUID userId = securityService.getAuthenticatedUserId();
-        
-        return ResponseEntity.ok(ApiResponse.success("Architecture generated successfully",
-                systemService.generateArchitecture(userId, configId)));
+        GenerationJobDto job = systemService.submitGeneration(userId, configId);
+
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(ApiResponse.success("Generation submitted — poll /jobs/" + job.getId() + " for status", job));
     }
+
+    // ================= GENERATION JOBS =================
+
+    @GetMapping("/jobs/{jobId}")
+    @Operation(
+            summary = "Poll generation job status",
+            description = "Returns current job status. Result payload is included when status is COMPLETED."
+    )
+    public ResponseEntity<ApiResponse<GenerationJobDto>> getJobStatus(
+            @PathVariable UUID jobId) {
+
+        UUID userId = securityService.getAuthenticatedUserId();
+
+        return ResponseEntity.ok(ApiResponse.success("Job status retrieved",
+                systemService.getJobStatus(userId, jobId)));
+    }
+
+    // ================= CONFIG MANAGEMENT =================
 
     @DeleteMapping("/configs/{configId}")
     @Operation(summary = "Delete configuration", description = "Soft delete a specific architecture configuration")
