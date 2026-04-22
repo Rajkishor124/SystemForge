@@ -1,8 +1,10 @@
 package com.systemforge.backend.common.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.systemforge.backend.common.audit.SecurityAuditLogger;
 import com.systemforge.backend.common.config.RateLimitConfig;
 import com.systemforge.backend.common.dto.ApiResponse;
+import com.systemforge.backend.common.exception.ErrorCode;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
@@ -45,6 +47,7 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
 
     private final RateLimitConfig rateLimitConfig;
     private final ObjectMapper objectMapper;
+    private final SecurityAuditLogger auditLogger;
 
     /**
      * In-memory bucket store. Thread-safe.
@@ -91,13 +94,14 @@ public class RateLimitingInterceptor implements HandlerInterceptor {
         // Rejected — 429 Too Many Requests
         long waitSeconds = probe.getNanosToWaitForRefill() / 1_000_000_000;
         log.warn("Rate limit exceeded: category={}, key={}, retryAfterSec={}", category, key, waitSeconds);
+        auditLogger.logRateLimitHit(key, path, resolveClientIp(request));
 
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.addHeader("Retry-After", String.valueOf(waitSeconds));
         response.addHeader("X-Rate-Limit-Remaining", "0");
 
-        ApiResponse<Void> errorResponse = ApiResponse.error(
+        ApiResponse<Void> errorResponse = ApiResponse.error(ErrorCode.RATE_001,
                 "Rate limit exceeded. Please try again after " + waitSeconds + " seconds."
         );
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

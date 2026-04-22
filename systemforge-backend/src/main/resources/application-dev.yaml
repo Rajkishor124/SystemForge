@@ -1,0 +1,67 @@
+# ============================================================
+# SystemForge — Development Profile
+# ============================================================
+# Active when: SPRING_PROFILES_ACTIVE=dev (or no profile set)
+#
+# Permissive defaults for local development:
+# - CORS allows localhost
+# - Swagger/API docs enabled
+# - Relaxed rate limits
+# - Debug logging
+# - Full actuator exposure
+# ============================================================
+
+# ─── CORS (permissive for local dev) ─────────────────────────────────────────
+# Note: CORS is configured in SecurityConfig.java
+# Dev origins: localhost:3000 (Next.js), localhost:5173 (Vite)
+
+# ─── LOGGING ─────────────────────────────────────────────────────────────────
+logging:
+  level:
+    root: INFO
+    com.systemforge: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    io.github.resilience4j: DEBUG
+    AUDIT: DEBUG
+
+# ─── ACTUATOR (full exposure for dev) ────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+# ─── SWAGGER ─────────────────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+# ─── RATE LIMITS (relaxed for dev) ───────────────────────────────────────────
+app:
+  rate-limit:
+    otp:
+      capacity: 100
+      refill-minutes: 1
+    login:
+      capacity: 100
+      refill-minutes: 1
+    generate:
+      capacity: 50
+      refill-minutes: 1
+    architect-chat:
+      capacity: 100
+      refill-minutes: 1
+
+# ─── RESILIENCE4J (lower thresholds for testing) ─────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      openai:
+        wait-duration-in-open-state: 10s
+        minimum-number-of-calls: 3

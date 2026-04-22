@@ -5,6 +5,11 @@ server:
   error:
     include-message: never       # Never expose internal error messages to client
     include-stacktrace: never
+  shutdown: graceful              # Allow in-flight requests to complete on SIGTERM
+  tomcat:
+    max-http-form-post-size: 2MB  # Limit form POST body size
+    max-swallow-size: 2MB         # Max body to swallow on connection close
+  max-http-request-header-size: 16KB
 
 spring:
   application:
@@ -13,6 +18,12 @@ spring:
     allow-bean-definition-overriding: true
   cache:
     type: ${SPRING_CACHE_TYPE:none}
+  lifecycle:
+    timeout-per-shutdown-phase: 30s  # Max wait for async tasks on shutdown
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
 
   # ─── DATABASE ─────────────────────────────────────────────────────────────
   datasource:

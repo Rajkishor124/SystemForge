@@ -7,6 +7,7 @@ import com.systemforge.backend.auth.dto.request.VerifyOtpRequest;
 import com.systemforge.backend.auth.dto.response.AuthResponse;
 import com.systemforge.backend.auth.service.AuthService;
 import com.systemforge.backend.auth.service.SecurityService;
+import com.systemforge.backend.common.audit.SecurityAuditLogger;
 import com.systemforge.backend.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -49,6 +50,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final SecurityService securityService;
+    private final SecurityAuditLogger auditLogger;
 
     // ================= REGISTER =================
 
@@ -66,15 +68,16 @@ public class AuthController {
                 .body(ApiResponse.success("Registration successful", response.withoutTokens()));
     }
 
-    // ================= LOGIN =================
-
     @PostMapping("/login")
     @SecurityRequirements
     @Operation(summary = "Login", description = "Authenticate with email and password")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
-            @Valid @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
 
         AuthResponse response = authService.login(request);
+        auditLogger.logLoginSuccess(request.getEmail(), extractClientIp(httpRequest),
+                httpRequest.getHeader("User-Agent"));
 
         return ResponseEntity.ok()
                 .headers(buildAuthCookieHeaders(response))
@@ -129,20 +132,21 @@ public class AuthController {
         }
 
         AuthResponse response = authService.refreshToken(refreshToken);
+        auditLogger.logTokenRefresh(
+                UUID.fromString(response.getUserId()), extractClientIp(httpRequest));
 
         return ResponseEntity.ok()
                 .headers(buildAuthCookieHeaders(response))
                 .body(ApiResponse.success("Token refreshed", response.withoutTokens()));
     }
 
-    // ================= LOGOUT =================
-
     @PostMapping("/logout")
     @Operation(summary = "Logout", description = "Revoke all refresh tokens and clear auth cookies")
-    public ResponseEntity<ApiResponse<Void>> logout() {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest httpRequest) {
 
-        String userId = securityService.getAuthenticatedUserId().toString();
-        authService.logout(userId);
+        UUID userId = securityService.getAuthenticatedUserId();
+        authService.logout(userId.toString());
+        auditLogger.logLogout(userId, extractClientIp(httpRequest));
 
         return ResponseEntity.ok()
                 .headers(buildClearCookieHeaders())
@@ -223,5 +227,16 @@ public class AuthController {
             }
         }
         return null;
+    }
+
+    /**
+     * Extracts the real client IP, accounting for reverse proxy / load balancer headers.
+     */
+    private String extractClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (StringUtils.hasText(forwarded)) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

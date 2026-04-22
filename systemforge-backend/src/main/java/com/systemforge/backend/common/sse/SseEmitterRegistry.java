@@ -117,4 +117,27 @@ public class SseEmitterRegistry {
     public int activeCount() {
         return emitters.size();
     }
+
+    /**
+     * Sends a server_shutdown event to all connected clients and closes all emitters.
+     * Called during graceful application shutdown to prevent client-side hanging.
+     */
+    public void broadcastShutdown() {
+        String shutdownEvent = "{\"type\":\"server_shutdown\"}";
+
+        emitters.forEach((jobId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("generation-progress")
+                        .data(shutdownEvent));
+                emitter.complete();
+                log.debug("[SSE] Shutdown: closed emitter for jobId={}", jobId);
+            } catch (Exception e) {
+                log.debug("[SSE] Shutdown: error closing emitter for jobId={}: {}", jobId, e.getMessage());
+                try { emitter.completeWithError(e); } catch (Exception ignored) {}
+            }
+        });
+
+        emitters.clear();
+    }
 }

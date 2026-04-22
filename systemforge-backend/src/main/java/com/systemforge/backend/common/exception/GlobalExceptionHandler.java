@@ -1,6 +1,7 @@
 package com.systemforge.backend.common.exception;
 
 import com.systemforge.backend.common.dto.ApiResponse;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +12,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -20,7 +23,8 @@ import java.util.stream.Collectors;
  *
  * <p>Centralizes error handling so individual controllers stay thin.
  * Every exception that escapes a service method is caught here and mapped
- * to a consistent {@link ApiResponse} with the correct HTTP status.
+ * to a consistent {@link ApiResponse} with the correct HTTP status and
+ * machine-readable {@link ErrorCode}.
  *
  * <p>Internal exception details (stack traces, DB errors) are NEVER exposed
  * to the client — they are logged server-side only.
@@ -45,7 +49,9 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(ex.getHttpStatus())
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(ApiResponse.error(
+                        resolveErrorCode(ex.getErrorCode()),
+                        ex.getMessage()));
     }
 
     // ─── VALIDATION EXCEPTIONS ────────────────────────────────────────────────
@@ -76,7 +82,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(ApiResponse.error("Validation failed", fieldErrors));
+                .body(ApiResponse.error(ErrorCode.VAL_001, "Validation failed", fieldErrors));
     }
 
     // ─── SECURITY EXCEPTIONS ─────────────────────────────────────────────────
@@ -86,7 +92,8 @@ public class GlobalExceptionHandler {
         log.warn("[AccessDenied] {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(ApiResponse.error("Access denied — insufficient permissions"));
+                .body(ApiResponse.error(ErrorCode.GEN_003,
+                        "Access denied — insufficient permissions"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -94,7 +101,47 @@ public class GlobalExceptionHandler {
         log.warn("[BadCredentials] {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error("Invalid credentials"));
+                .body(ApiResponse.error(ErrorCode.AUTH_001, "Invalid credentials"));
+    }
+
+    // ─── RESILIENCE EXCEPTIONS ───────────────────────────────────────────────
+
+    /**
+     * Circuit breaker is OPEN — all LLM calls are being rejected.
+     * Returns 503 so clients know to retry later.
+     */
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleCircuitBreakerOpen(
+            CallNotPermittedException ex) {
+        log.warn("[CircuitBreaker] Call rejected — circuit OPEN: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiResponse.error(ErrorCode.AI_001,
+                        "AI service temporarily unavailable. Please try again in a minute."));
+    }
+
+    /**
+     * AI call timed out (beyond the configured threshold).
+     */
+    @ExceptionHandler(TimeoutException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTimeout(TimeoutException ex) {
+        log.warn("[Timeout] AI call timed out: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.GATEWAY_TIMEOUT)
+                .body(ApiResponse.error(ErrorCode.AI_002,
+                        "AI request timed out. Please try again."));
+    }
+
+    // ─── SIZE LIMIT EXCEPTIONS ───────────────────────────────────────────────
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(
+            MaxUploadSizeExceededException ex) {
+        log.warn("[SizeLimit] Upload too large: {}", ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.error(ErrorCode.VAL_003,
+                        "Request body too large. Maximum allowed size is 10MB."));
     }
 
     // ─── FALLBACK ─────────────────────────────────────────────────────────────
@@ -114,6 +161,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred. Please try again later."));
+                .body(ApiResponse.error(ErrorCode.GEN_004,
+                        "An unexpected error occurred. Please try again later."));
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Maps a BusinessException's string errorCode to an ErrorCode enum.
+     * Falls back to GEN_004 if the code doesn't match any known enum value.
+     */
+    private ErrorCode resolveErrorCode(String code) {
+        if (code == null || code.isBlank()) return ErrorCode.GEN_004;
+        try {
+            return ErrorCode.valueOf(code);
+        } catch (IllegalArgumentException e) {
+            return ErrorCode.GEN_004;
+        }
     }
 }

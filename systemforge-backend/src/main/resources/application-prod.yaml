@@ -1,0 +1,66 @@
+# ============================================================
+# SystemForge — Production Profile
+# ============================================================
+# Active when: SPRING_PROFILES_ACTIVE=prod
+#
+# MUST be explicitly activated. Never runs by default.
+#
+# Hardened settings:
+# - Swagger disabled
+# - Restricted actuator
+# - Production rate limits
+# - No debug logging
+# - No stack traces in responses
+# ============================================================
+
+# ─── SERVER (hardened) ───────────────────────────────────────────────────────
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+# ─── SWAGGER (disabled in prod) ──────────────────────────────────────────────
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# ─── LOGGING (no debug, audit enabled) ───────────────────────────────────────
+logging:
+  level:
+    root: WARN
+    com.systemforge: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    io.github.resilience4j: INFO
+    AUDIT: INFO
+
+# ─── ACTUATOR (restricted) ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,circuitbreakers
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ─── HIKARI (production pool sizing) ─────────────────────────────────────────
+spring:
+  datasource:
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 30
+      idle-timeout: 600000
+      connection-timeout: 10000
+
+  # ─── JPA (strict prod settings) ──────────────────────────────────────────
+  jpa:
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false

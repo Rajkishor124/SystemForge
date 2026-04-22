@@ -1,6 +1,7 @@
 package com.systemforge.backend.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.systemforge.backend.common.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,6 +47,9 @@ public class ApiResponse<T> {
 
     @Schema(description = "Correlation ID for distributed tracing — echo from X-Correlation-ID header")
     private final String correlationId;
+
+    @Schema(description = "Machine-readable error code for programmatic handling (e.g., AUTH_001)")
+    private final String errorCode;
 
     // ─── Factory methods — prefer these over the builder for standard cases ────
 
@@ -95,6 +99,33 @@ public class ApiResponse<T> {
         return ApiResponse.<T>builder()
                 .success(false)
                 .message(message)
+                .timestamp(Instant.now())
+                .correlationId(CorrelationId.current())
+                .build();
+    }
+
+    /**
+     * Creates an error response with a machine-readable error code.
+     */
+    public static <T> ApiResponse<T> error(ErrorCode code, String message) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .errorCode(code.code())
+                .message(message)
+                .timestamp(Instant.now())
+                .correlationId(CorrelationId.current())
+                .build();
+    }
+
+    /**
+     * Creates an error response with a machine-readable error code and detail payload.
+     */
+    public static <T> ApiResponse<T> error(ErrorCode code, String message, T errorDetails) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .errorCode(code.code())
+                .message(message)
+                .data(errorDetails)
                 .timestamp(Instant.now())
                 .correlationId(CorrelationId.current())
                 .build();

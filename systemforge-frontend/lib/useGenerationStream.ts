@@ -181,6 +181,21 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           jobId: event.jobId ?? prev.jobId,
         }));
         break;
+
+      case 'server_shutdown':
+        // Server is shutting down — close SSE and fall back to polling
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+        setState(prev => {
+          // Only fall back if not already in a terminal state
+          if (prev.status !== 'completed' && prev.status !== 'failed') {
+            return { ...prev, status: 'polling_fallback' };
+          }
+          return prev;
+        });
+        break;
     }
   }, []);
 
