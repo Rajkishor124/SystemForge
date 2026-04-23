@@ -117,9 +117,6 @@ const CustomNode = ({ data, selected }: NodeProps) => {
   );
 };
 
-const nodeTypes = {
-  custom: CustomNode,
-};
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -133,6 +130,8 @@ export default function ArchitecturePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
