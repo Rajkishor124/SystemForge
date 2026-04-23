@@ -41,6 +41,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationContext;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -54,6 +56,15 @@ public class SystemServiceImpl implements SystemService {
     private final ObjectMapper objectMapper;
     private final SseEmitterRegistry sseRegistry;
     private final MabaOrchestrator mabaOrchestrator;
+    private final ApplicationContext applicationContext;
+
+    /**
+     * Returns the Spring AOP proxy of this bean.
+     * Required because @Async on self-invoked methods is silently ignored.
+     */
+    private SystemServiceImpl self() {
+        return applicationContext.getBean(SystemServiceImpl.class);
+    }
 
     // ─── System Catalog ───────────────────────────────────────────────────
 
@@ -183,8 +194,9 @@ public class SystemServiceImpl implements SystemService {
         GenerationJob saved = jobRepository.save(job);
         log.info("Generation job created: jobId={}", saved.getId());
 
-        // Fire-and-forget async execution
-        executeGenerationAsync(saved.getId());
+        // CRITICAL: Use self() proxy reference — direct self.executeGenerationAsync()
+        // invocation bypasses Spring AOP, meaning @Async silently runs synchronously.
+        self().executeGenerationAsync(saved.getId());
 
         return toJobDto(saved);
     }

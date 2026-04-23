@@ -79,13 +79,18 @@ spring:
         cache:
           use_second_level_cache: false  # Enable with Redis later
 
-  # ─── OPEN AI ───────────────────────────────────────────
+  # ─── LLM / OPEN AI ───────────────────────────────────────────
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:}
       chat:
         options:
-          model: gpt-4o-mini
+          model: ${OPENAI_MODEL:gpt-4o-mini}
+
+# ─── LLM Model (used by MABA pipeline and Architect) ────────────────────
+openai:
+  model: ${OPENAI_MODEL:gpt-4o-mini}
 
   # ─── REDIS (Future) ───────────────────────────────────────────────────────
   # data:
