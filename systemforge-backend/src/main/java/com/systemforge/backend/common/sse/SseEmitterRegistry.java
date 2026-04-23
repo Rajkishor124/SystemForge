@@ -7,9 +7,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Thread-safe registry for active SSE connections.
@@ -41,6 +43,12 @@ public class SseEmitterRegistry {
     private final ConcurrentMap<UUID, SseEmitter> emitters = new ConcurrentHashMap<>();
 
     /**
+     * History of events for active jobs to support client reconnection.
+     * Prevents clients from losing animation state on page refresh.
+     */
+    private final ConcurrentMap<UUID, List<Object>> eventHistory = new ConcurrentHashMap<>();
+
+    /**
      * Registers an emitter for a job.
      * Sets up automatic cleanup callbacks for timeout, completion, and error.
      */
@@ -64,6 +72,22 @@ public class SseEmitterRegistry {
             log.debug("[SSE] Emitter error for jobId={}: {}", jobId, e.getMessage());
         });
 
+        // Replay history for reconnecting clients
+        List<Object> history = eventHistory.get(jobId);
+        if (history != null && !history.isEmpty()) {
+            for (Object event : history) {
+                try {
+                    String json = objectMapper.writeValueAsString(event);
+                    emitter.send(SseEmitter.event()
+                            .name("generation-progress")
+                            .data(json));
+                } catch (Exception e) {
+                    log.warn("[SSE] Failed to replay event for jobId={}: {}", jobId, e.getMessage());
+                }
+            }
+            log.debug("[SSE] Replayed {} historical events for jobId={}", history.size(), jobId);
+        }
+
         log.info("[SSE] Registered emitter for jobId={}", jobId);
     }
 
@@ -75,6 +99,9 @@ public class SseEmitterRegistry {
      * @param event the event payload (will be serialized to JSON)
      */
     public void send(UUID jobId, Object event) {
+        // Cache event for any future reconnects
+        eventHistory.computeIfAbsent(jobId, k -> new CopyOnWriteArrayList<>()).add(event);
+
         SseEmitter emitter = emitters.get(jobId);
         if (emitter == null) {
             log.trace("[SSE] No listener for jobId={}, dropping event", jobId);
@@ -100,6 +127,8 @@ public class SseEmitterRegistry {
      */
     public void complete(UUID jobId) {
         SseEmitter emitter = emitters.remove(jobId);
+        eventHistory.remove(jobId);
+        
         if (emitter == null) return;
 
         try {
@@ -139,5 +168,6 @@ public class SseEmitterRegistry {
         });
 
         emitters.clear();
+        eventHistory.clear();
     }
 }
