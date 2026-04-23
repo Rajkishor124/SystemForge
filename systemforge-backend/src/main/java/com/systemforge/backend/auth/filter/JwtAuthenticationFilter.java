@@ -113,6 +113,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
+     * Ensures this filter runs during async dispatch (required for SSE).
+     * By default, OncePerRequestFilter skips async dispatches, causing SseEmitters
+     * to throw Access Denied on the async thread and break with ERR_INCOMPLETE_CHUNKED_ENCODING.
+     */
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return false;
+    }
+
+    /**
      * Extracts the access token using cookie-first, header-fallback strategy.
      *
      * <p>Cookie-first is preferred because HttpOnly cookies cannot be stolen
