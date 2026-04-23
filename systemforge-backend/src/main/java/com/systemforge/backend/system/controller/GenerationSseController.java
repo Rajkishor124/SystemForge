@@ -3,6 +3,9 @@ package com.systemforge.backend.system.controller;
 import com.systemforge.backend.auth.service.SecurityService;
 import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import com.systemforge.backend.system.dto.GenerationProgressEvent;
+import com.systemforge.backend.system.dto.GenerationJobDto;
+import com.systemforge.backend.common.enums.JobStatus;
+import com.systemforge.backend.system.service.SystemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +47,7 @@ public class GenerationSseController {
 
     private final SseEmitterRegistry sseRegistry;
     private final SecurityService securityService;
+    private final SystemService systemService;
 
     @GetMapping(value = "/jobs/{jobId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(
@@ -59,10 +63,20 @@ public class GenerationSseController {
         UUID userId = securityService.getAuthenticatedUserId();
         log.info("[SSE] Client subscribing to job stream: jobId={}, userId={}", jobId, userId);
 
-        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
+        GenerationJobDto job = systemService.getJobStatus(userId, jobId);
 
-        // Register for events from the async worker
+        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
         sseRegistry.register(jobId, emitter);
+
+        if (job.getStatus() == JobStatus.COMPLETED) {
+            sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
+            sseRegistry.complete(jobId);
+            return emitter;
+        } else if (job.getStatus() == JobStatus.FAILED) {
+            sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
+            sseRegistry.complete(jobId);
+            return emitter;
+        }
 
         // Send initial connection event
         try {
