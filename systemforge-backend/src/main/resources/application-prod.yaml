@@ -9,8 +9,9 @@
 # - Swagger disabled
 # - Restricted actuator
 # - Production rate limits
-# - No debug logging
+# - No debug logging (JSON structured via logback-spring.xml)
 # - No stack traces in responses
+# - Tuned thread pools for high concurrency
 # ============================================================
 
 # ─── SERVER (hardened) ───────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ logging:
     io.github.resilience4j: INFO
     AUDIT: INFO
 
-# ─── ACTUATOR (restricted) ──────────────────────────────────────────────────
+# ─── ACTUATOR (restricted — health + metrics only) ──────────────────────────
 management:
   endpoints:
     web:
@@ -64,3 +65,16 @@ spring:
       hibernate:
         format_sql: false
         use_sql_comments: false
+
+# ─── ASYNC THREAD POOL (scaled for production load) ─────────────────────────
+systemforge:
+  async:
+    core-pool-size: 10
+    max-pool-size: 50
+    queue-capacity: 100
+  sse:
+    timeout-ms: 300000        # 5 minutes (longer for production pipelines)
+    heartbeat-interval-ms: 15000
+  job:
+    stuck-timeout-minutes: 15
+    max-retries: 3

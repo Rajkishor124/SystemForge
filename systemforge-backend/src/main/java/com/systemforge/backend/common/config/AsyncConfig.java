@@ -3,6 +3,7 @@ package com.systemforge.backend.common.config;
 import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
@@ -28,9 +29,10 @@ import lombok.extern.slf4j.Slf4j;
  *       the Tomcat request thread pool during heavy LLM workloads</li>
  *   <li>MDC-propagating TaskDecorator — ensures correlationId flows from
  *       the HTTP request thread into the async worker thread</li>
- *   <li>CallerRunsPolicy — under extreme load, the calling thread runs the
- *       task itself rather than rejecting it (graceful degradation)</li>
+ *   <li>AbortPolicy — under extreme load, rejects new tasks immediately
+ *       rather than blocking the caller (backpressure handled upstream)</li>
  *   <li>Scheduled pool stats logging — periodic visibility into thread utilization</li>
+ *   <li>Pool sizes externalized via application-{profile}.yaml</li>
  * </ul>
  */
 @Configuration
@@ -42,6 +44,15 @@ public class AsyncConfig implements AsyncConfigurer {
     private ThreadPoolTaskExecutor aiExecutor;
     private final SseEmitterRegistry sseRegistry;
 
+    @Value("${systemforge.async.core-pool-size:10}")
+    private int corePoolSize;
+
+    @Value("${systemforge.async.max-pool-size:50}")
+    private int maxPoolSize;
+
+    @Value("${systemforge.async.queue-capacity:100}")
+    private int queueCapacity;
+
     public AsyncConfig(SseEmitterRegistry sseRegistry) {
         this.sseRegistry = sseRegistry;
     }
@@ -49,32 +60,33 @@ public class AsyncConfig implements AsyncConfigurer {
     /**
      * Dedicated executor for AI generation tasks.
      *
-     * <p>Sizing rationale:
-     * <ul>
-     *   <li>Core 10: handles typical concurrent generation requests</li>
-     *   <li>Max 50: burst capacity during peak hours</li>
-     *   <li>Queue 100: buffer for spikes; rejected tasks fall back to caller thread</li>
-     * </ul>
+     * <p>Sizing is profile-driven via {@code systemforge.async.*} properties.
+     * Dev defaults are conservative; production values scale to handle
+     * concurrent generation workloads.
      */
     @Bean("aiGenerationExecutor")
     public Executor aiGenerationExecutor() {
         aiExecutor = new ThreadPoolTaskExecutor();
-        aiExecutor.setCorePoolSize(10);
-        aiExecutor.setMaxPoolSize(50);
-        aiExecutor.setQueueCapacity(100);
+        aiExecutor.setCorePoolSize(corePoolSize);
+        aiExecutor.setMaxPoolSize(maxPoolSize);
+        aiExecutor.setQueueCapacity(queueCapacity);
         aiExecutor.setThreadNamePrefix("ai-gen-");
         aiExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         aiExecutor.setTaskDecorator(new MdcTaskDecorator());
         aiExecutor.setWaitForTasksToCompleteOnShutdown(true);
         aiExecutor.setAwaitTerminationSeconds(30);
         aiExecutor.initialize();
+
+        log.info("event=EXECUTOR_INITIALIZED pool=aiGenerationExecutor core={} max={} queue={}",
+                corePoolSize, maxPoolSize, queueCapacity);
+
         return aiExecutor;
     }
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return (throwable, method, params) ->
-                log.error("[ASYNC] Uncaught exception in {}: {}", method.getName(), throwable.getMessage(), throwable);
+                log.error("event=ASYNC_UNCAUGHT_EXCEPTION method={} error={}", method.getName(), throwable.getMessage(), throwable);
     }
 
     // ─── Pool Stats Monitoring ────────────────────────────────────────────
@@ -87,7 +99,7 @@ public class AsyncConfig implements AsyncConfigurer {
     public void logPoolStats() {
         if (aiExecutor == null) return;
         ThreadPoolExecutor pool = aiExecutor.getThreadPoolExecutor();
-        log.info("[POOL_STATS] ai-gen: active={} pool={} queue={} completed={} sseConnections={}",
+        log.info("event=POOL_STATS pool=ai-gen active={} poolSize={} queueSize={} completed={} sseConnections={}",
                 pool.getActiveCount(),
                 pool.getPoolSize(),
                 pool.getQueue().size(),

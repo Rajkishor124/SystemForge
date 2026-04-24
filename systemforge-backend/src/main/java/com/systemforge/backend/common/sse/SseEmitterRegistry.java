@@ -1,19 +1,19 @@
 package com.systemforge.backend.common.sse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.systemforge.backend.common.metrics.GenerationMetrics;
 import com.systemforge.backend.system.dto.GenerationProgressEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Deque;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Thread-safe registry for active SSE connections.
@@ -30,13 +30,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>If no SSE listener is connected when events are emitted (e.g., client only
  * uses polling), events are silently dropped. This makes SSE strictly optional —
  * the polling API is always the source of truth.
+ *
+ * <p>Event history is bounded to the last 50 events per job to prevent memory leaks.
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class SseEmitterRegistry {
 
+    private static final int MAX_HISTORY_SIZE = 50;
+
     private final ObjectMapper objectMapper;
+    private final GenerationMetrics metrics;
 
     /**
      * Active SSE connections keyed by jobId.
@@ -46,10 +50,14 @@ public class SseEmitterRegistry {
 
     /**
      * History of events for active jobs to support client reconnection.
-     * Prevents clients from losing animation state on page refresh.
-     * Bounded to last 50 events to prevent memory leaks.
+     * Bounded to last {@value MAX_HISTORY_SIZE} events to prevent memory leaks.
      */
-    private final ConcurrentMap<UUID, java.util.Deque<Object>> eventHistory = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Deque<Object>> eventHistory = new ConcurrentHashMap<>();
+
+    public SseEmitterRegistry(ObjectMapper objectMapper, GenerationMetrics metrics) {
+        this.objectMapper = objectMapper;
+        this.metrics = metrics;
+    }
 
     /**
      * Registers an emitter for a job.
@@ -62,22 +70,28 @@ public class SseEmitterRegistry {
             try { existing.complete(); } catch (Exception ignored) {}
         }
 
+        metrics.sseConnected();
+
         emitter.onCompletion(() -> {
             emitters.remove(jobId);
-            log.debug("[SSE] Emitter completed for jobId={}", jobId);
+            metrics.sseDisconnected();
+            log.debug("event=SSE_COMPLETED jobId={}", jobId);
         });
         emitter.onTimeout(() -> {
             emitters.remove(jobId);
-            log.debug("[SSE] Emitter timed out for jobId={}", jobId);
+            metrics.sseDisconnected();
+            log.debug("event=SSE_TIMEOUT jobId={}", jobId);
         });
         emitter.onError(e -> {
             emitters.remove(jobId);
-            log.debug("[SSE] Emitter error for jobId={}: {}", jobId, e.getMessage());
+            metrics.sseDisconnected();
+            log.debug("event=SSE_ERROR jobId={} error={}", jobId, e.getMessage());
         });
 
         // Replay history for reconnecting clients
-        java.util.Deque<Object> history = eventHistory.get(jobId);
+        Deque<Object> history = eventHistory.get(jobId);
         if (history != null && !history.isEmpty()) {
+            int replayCount = 0;
             for (Object event : history) {
                 try {
                     String json = objectMapper.writeValueAsString(event);
@@ -85,14 +99,15 @@ public class SseEmitterRegistry {
                     emitter.send(SseEmitter.event()
                             .name(eventName)
                             .data(json));
+                    replayCount++;
                 } catch (Exception e) {
-                    log.warn("[SSE] Failed to replay event for jobId={}: {}", jobId, e.getMessage());
+                    log.warn("event=SSE_REPLAY_FAILED jobId={} error={}", jobId, e.getMessage());
                 }
             }
-            log.debug("[SSE] Replayed {} historical events for jobId={}", history.size(), jobId);
+            log.debug("event=SSE_REPLAY jobId={} eventsReplayed={}", jobId, replayCount);
         }
 
-        log.info("[SSE] Registered emitter for jobId={}", jobId);
+        log.info("event=SSE_REGISTERED jobId={} activeConnections={}", jobId, emitters.size());
     }
 
     /**
@@ -103,16 +118,16 @@ public class SseEmitterRegistry {
      * @param event the event payload (will be serialized to JSON)
      */
     public void send(UUID jobId, Object event) {
-        // Cache event for any future reconnects (Bounded to 50)
-        java.util.Deque<Object> history = eventHistory.computeIfAbsent(jobId, k -> new java.util.concurrent.ConcurrentLinkedDeque<>());
+        // Cache event for any future reconnects (bounded to MAX_HISTORY_SIZE)
+        Deque<Object> history = eventHistory.computeIfAbsent(jobId, k -> new ConcurrentLinkedDeque<>());
         history.addLast(event);
-        while (history.size() > 50) {
+        while (history.size() > MAX_HISTORY_SIZE) {
             history.pollFirst();
         }
 
         SseEmitter emitter = emitters.get(jobId);
         if (emitter == null) {
-            log.trace("[SSE] No listener for jobId={}, dropping event", jobId);
+            log.trace("event=SSE_NO_LISTENER jobId={}", jobId);
             return;
         }
 
@@ -122,38 +137,43 @@ public class SseEmitterRegistry {
             emitter.send(SseEmitter.event()
                     .name(eventName)
                     .data(json));
-            log.debug("[SSE] Sent event for jobId={}: {}", jobId, json.substring(0, Math.min(json.length(), 100)));
+            log.debug("event=SSE_SENT jobId={} eventType={}", jobId, eventName);
         } catch (IOException e) {
-            log.warn("[SSE] Failed to send event for jobId={}: {}", jobId, e.getMessage());
+            log.warn("event=SSE_SEND_FAILED jobId={} error={}", jobId, e.getMessage());
             emitters.remove(jobId);
             try { emitter.completeWithError(e); } catch (Exception ignored) {}
         }
     }
 
     /**
-     * Completes the SSE connection for a job.
-     * Sends a final event before closing if provided.
+     * Completes the SSE connection for a job and clears event history.
      */
     public void complete(UUID jobId) {
         SseEmitter emitter = emitters.remove(jobId);
         eventHistory.remove(jobId);
-        
+
         if (emitter == null) return;
 
         try {
             emitter.complete();
-            log.info("[SSE] Completed stream for jobId={}", jobId);
+            log.info("event=SSE_STREAM_COMPLETED jobId={}", jobId);
         } catch (Exception e) {
-            log.debug("[SSE] Error completing emitter for jobId={}: {}", jobId, e.getMessage());
+            log.debug("event=SSE_COMPLETE_ERROR jobId={} error={}", jobId, e.getMessage());
         }
     }
 
     /**
      * Returns the number of active SSE connections.
-     * Useful for monitoring/metrics.
      */
     public int activeCount() {
         return emitters.size();
+    }
+
+    /**
+     * Returns the total number of events currently cached across all jobs.
+     */
+    public int totalCachedEvents() {
+        return eventHistory.values().stream().mapToInt(Deque::size).sum();
     }
 
     /**
@@ -169,9 +189,9 @@ public class SseEmitterRegistry {
                         .name("PROGRESS")
                         .data(shutdownEvent));
                 emitter.complete();
-                log.debug("[SSE] Shutdown: closed emitter for jobId={}", jobId);
+                log.debug("event=SSE_SHUTDOWN jobId={}", jobId);
             } catch (Exception e) {
-                log.debug("[SSE] Shutdown: error closing emitter for jobId={}: {}", jobId, e.getMessage());
+                log.debug("event=SSE_SHUTDOWN_ERROR jobId={} error={}", jobId, e.getMessage());
                 try { emitter.completeWithError(e); } catch (Exception ignored) {}
             }
         });
@@ -180,18 +200,21 @@ public class SseEmitterRegistry {
         eventHistory.clear();
     }
 
+    /**
+     * Sends heartbeat to all active SSE connections every 15 seconds.
+     * Prevents TCP idle timeout disconnections by proxies/load balancers.
+     */
     @Scheduled(fixedRate = 15000)
     public void sendHeartbeats() {
         if (emitters.isEmpty()) return;
-        
-        String heartbeatData = "{\"type\":\"heartbeat\",\"data\":\"ping\"}";
+
         emitters.forEach((jobId, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
                         .name("HEARTBEAT")
-                        .data(heartbeatData));
+                        .data("ping"));
             } catch (Exception e) {
-                log.debug("[SSE] Heartbeat failed for jobId={}, removing emitter", jobId);
+                log.debug("event=SSE_HEARTBEAT_FAILED jobId={}", jobId);
                 emitters.remove(jobId);
                 try { emitter.completeWithError(e); } catch (Exception ignored) {}
             }

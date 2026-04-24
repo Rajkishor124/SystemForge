@@ -64,6 +64,7 @@ public class SystemServiceImpl implements SystemService {
     private final ApplicationContext applicationContext;
     private final ApplicationEventPublisher eventPublisher;
     private final @Qualifier("aiGenerationExecutor") Executor aiExecutor;
+    private final com.systemforge.backend.common.metrics.GenerationMetrics generationMetrics;
 
     /**
      * Returns the Spring AOP proxy of this bean.
@@ -207,7 +208,8 @@ public class SystemServiceImpl implements SystemService {
                 .build();
 
         GenerationJob saved = jobRepository.save(job);
-        log.info("Generation job created: jobId={}", saved.getId());
+        generationMetrics.incrementCreated();
+        log.info("event=JOB_CREATED jobId={} userId={} configId={} status=PENDING", saved.getId(), userId, configId);
 
         // Publish event to trigger async worker AFTER commit
         eventPublisher.publishEvent(new GenerationJobSubmittedEvent(saved.getId()));

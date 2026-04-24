@@ -49,7 +49,9 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/swagger-ui.html",
             "/api-docs/**",
-            "/actuator/health"
+            "/actuator/health",
+            "/actuator/metrics",
+            "/actuator/metrics/**"
     };
 
     private final CorrelationIdFilter     correlationIdFilter;

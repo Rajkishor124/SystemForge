@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -35,6 +36,9 @@ import java.util.UUID;
  *
  * <p>SSE is strictly optional. The polling API remains the source of truth.
  * If the SSE connection drops, the client falls back to polling.
+ *
+ * <p>Security: job ownership is verified before stream creation.
+ * Unauthorized access throws AccessDeniedException.
  */
 @RestController
 @RequestMapping("/api/v1/systems")
@@ -61,19 +65,23 @@ public class GenerationSseController {
     )
     public SseEmitter streamJobProgress(@PathVariable UUID jobId) {
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
-        
+
         try {
             UUID userId = securityService.getAuthenticatedUserId();
-            log.info("[SSE] Client subscribing to job stream: jobId={}, userId={}", jobId, userId);
+            log.info("event=SSE_SUBSCRIBE jobId={} userId={}", jobId, userId);
 
+            // getJobStatus internally verifies ownership (throws AccessDeniedException)
             GenerationJobDto job = systemService.getJobStatus(userId, jobId);
             sseRegistry.register(jobId, emitter);
 
+            // If job already terminal, emit final state immediately and close
             if (job.getStatus() == JobStatus.COMPLETED) {
+                log.info("event=SSE_REPLAY_TERMINAL jobId={} userId={} status=COMPLETED", jobId, userId);
                 sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
                 sseRegistry.complete(jobId);
                 return emitter;
             } else if (job.getStatus() == JobStatus.FAILED) {
+                log.info("event=SSE_REPLAY_TERMINAL jobId={} userId={} status=FAILED", jobId, userId);
                 sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
                 sseRegistry.complete(jobId);
                 return emitter;
@@ -82,10 +90,20 @@ public class GenerationSseController {
             // Send initial connection event
             emitter.send(SseEmitter.event()
                     .name("INIT")
-                    .data("{\"type\":\"connected\",\"jobId\":\"" + jobId + "\"}"));
-            
+                    .data("{\"type\":\"connected\",\"jobId\":\"" + jobId + "\",\"status\":\"" + job.getStatus() + "\"}"));
+
+            log.info("event=SSE_CONNECTED jobId={} userId={} currentStatus={}", jobId, userId, job.getStatus());
+
+        } catch (AccessDeniedException e) {
+            log.warn("event=SSE_ACCESS_DENIED jobId={} error={}", jobId, e.getMessage());
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("FAILED")
+                        .data("{\"type\":\"failed\",\"errorMessage\":\"Access denied\"}"));
+                emitter.complete();
+            } catch (IOException ignored) {}
         } catch (Exception e) {
-            log.error("[SSE] Failed to establish stream for jobId={}: {}", jobId, e.getMessage());
+            log.error("event=SSE_SETUP_FAILED jobId={} error={}", jobId, e.getMessage());
             try {
                 emitter.send(SseEmitter.event()
                         .name("FAILED")

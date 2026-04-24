@@ -3,6 +3,7 @@ package com.systemforge.backend.system.worker;
 import com.systemforge.backend.architect.maba.MabaContext;
 import com.systemforge.backend.architect.maba.MabaOrchestrator;
 import com.systemforge.backend.common.enums.JobStatus;
+import com.systemforge.backend.common.metrics.GenerationMetrics;
 import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import com.systemforge.backend.system.dto.GenerationProgressEvent;
 import com.systemforge.backend.system.entity.GenerationJob;
@@ -12,24 +13,28 @@ import com.systemforge.backend.system.repository.GenerationJobRepository;
 import com.systemforge.backend.system.repository.UserSystemConfigRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Background worker for executing AI generation jobs asynchronously.
- * 
+ *
  * <p>Uses @TransactionalEventListener to ensure execution only begins
  * AFTER the PENDING job has been successfully committed to the database,
  * preventing race conditions.
+ *
+ * <p>Structured logging: every log line includes jobId, userId, status
+ * via MDC for correlation in ELK/Datadog.
  */
 @Component
 @RequiredArgsConstructor
@@ -40,35 +45,47 @@ public class GenerationWorker {
     private final UserSystemConfigRepository configRepository;
     private final SseEmitterRegistry sseRegistry;
     private final MabaOrchestrator mabaOrchestrator;
+    private final GenerationMetrics metrics;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("aiGenerationExecutor")
     public void handleGenerationJobSubmitted(GenerationJobSubmittedEvent event) {
         UUID jobId = event.jobId();
-        log.info("[ASYNC] Handling submitted generation job: {}", jobId);
 
         GenerationJob job = jobRepository.findById(jobId).orElse(null);
         if (job == null) {
-            log.error("[ASYNC] Job not found: {}", jobId);
+            log.error("event=JOB_NOT_FOUND jobId={} message=Job not found after commit, possible data inconsistency", jobId);
             return;
         }
 
-        executeWithRetries(job);
+        // Set MDC for all downstream log lines in this thread
+        setJobMdc(job);
+        try {
+            log.info("event=JOB_PICKED_UP jobId={} userId={} status=PENDING", jobId, job.getUserId());
+            executeWithRetries(job);
+        } finally {
+            MDC.remove("jobId");
+            MDC.remove("userId");
+        }
     }
 
     private void executeWithRetries(GenerationJob job) {
         UUID jobId = job.getId();
-        
+
         // Transition to PROCESSING with atomic check-and-set
         LocalDateTime now = LocalDateTime.now();
         int updated = jobRepository.updateStatusConditionally(jobId, JobStatus.PROCESSING, JobStatus.PENDING, now);
         if (updated == 0) {
-            log.warn("[ASYNC] Job {} is not PENDING. Another worker may have picked it up. Exiting.", jobId);
+            log.warn("event=JOB_SKIP jobId={} userId={} message=Job is not PENDING, another worker may have picked it up",
+                    jobId, job.getUserId());
             return;
         }
-        
+
         job.setStatus(JobStatus.PROCESSING);
         job.setStartedAt(now);
+        metrics.markProcessing();
+        log.info("event=JOB_STARTED jobId={} userId={} status=PROCESSING attempt={}/{}",
+                jobId, job.getUserId(), job.getRetryCount() + 1, job.getMaxRetries());
 
         MabaContext mabaContext = null;
 
@@ -84,6 +101,7 @@ public class GenerationWorker {
             sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
                     "Config Validation", 1, 8, "Config loaded and validated", stepDuration));
             sseRegistry.send(jobId, GenerationProgressEvent.progress(5));
+            log.debug("event=STEP_COMPLETED jobId={} step=ConfigValidation durationMs={}", jobId, stepDuration);
 
             // ─── Step 2: Execute MABA Pipeline ────────────────────────────
             String userRequirements = buildRequirementsFromConfig(config);
@@ -92,6 +110,7 @@ public class GenerationWorker {
             mabaContext.setUserId(job.getUserId());
             mabaContext.setJobId(jobId);
 
+            log.info("event=MABA_PIPELINE_START jobId={} userId={}", jobId, job.getUserId());
             mabaOrchestrator.execute(mabaContext);
 
             if ("FAILED".equals(mabaContext.getStatus())) {
@@ -122,16 +141,21 @@ public class GenerationWorker {
             sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
             sseRegistry.complete(jobId);
 
-            log.info("[ASYNC] MABA generation completed: jobId={}, durationMs={}, totalTokens={}",
-                    jobId,
-                    java.time.Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis(),
-                    mabaContext.getTotalPromptTokens() + mabaContext.getTotalCompletionTokens());
+            long totalDurationMs = Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis();
+            long totalTokens = mabaContext.getTotalPromptTokens() + mabaContext.getTotalCompletionTokens();
+
+            metrics.incrementCompleted();
+            metrics.getJobDuration().record(Duration.ofMillis(totalDurationMs));
+
+            log.info("event=JOB_COMPLETED jobId={} userId={} status=COMPLETED durationMs={} totalTokens={} attempt={}/{}",
+                    jobId, job.getUserId(), totalDurationMs, totalTokens,
+                    job.getRetryCount() + 1, job.getMaxRetries());
 
         } catch (Exception e) {
-            log.error("[ASYNC] Generation failed for jobId={}: {}", jobId, e.getMessage(), e);
+            log.error("event=JOB_EXECUTION_ERROR jobId={} userId={} error={}", jobId, job.getUserId(), e.getMessage(), e);
 
             job.setRetryCount(job.getRetryCount() + 1);
-            
+
             if (job.getRetryCount() >= job.getMaxRetries()) {
                 job.setStatus(JobStatus.FAILED);
                 job.setErrorMessage("Max retries exceeded. Last error: " + e.getMessage());
@@ -141,16 +165,25 @@ public class GenerationWorker {
                 job.setCompletedAt(LocalDateTime.now());
                 jobRepository.saveAndFlush(job);
 
+                metrics.incrementFailed();
+
                 // Notify SSE listener of failure
                 sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
                 sseRegistry.complete(jobId);
+
+                log.error("event=JOB_FAILED jobId={} userId={} status=FAILED retryCount={} maxRetries={} lastError={}",
+                        jobId, job.getUserId(), job.getRetryCount(), job.getMaxRetries(), e.getMessage());
             } else {
-                log.warn("[ASYNC] Retrying job {}. Attempt {}/{}", jobId, job.getRetryCount(), job.getMaxRetries());
+                log.warn("event=JOB_RETRY jobId={} userId={} attempt={}/{} error={}",
+                        jobId, job.getUserId(), job.getRetryCount(), job.getMaxRetries(), e.getMessage());
+
+                metrics.incrementRetries();
+
                 job.setStatus(JobStatus.PENDING);
                 job.setErrorMessage("Failed attempt " + job.getRetryCount() + ": " + e.getMessage());
                 jobRepository.saveAndFlush(job);
-                
-                // Retry immediately (for a real system, you might want an exponential backoff via ScheduledExecutor)
+
+                // Retry (recursive call re-checks PENDING atomically)
                 executeWithRetries(job);
             }
         }
@@ -177,20 +210,30 @@ public class GenerationWorker {
     @Scheduled(fixedRate = 300000) // Run every 5 minutes
     @Transactional
     public void cleanStuckJobs() {
-        LocalDateTime timeoutThreshold = LocalDateTime.now().minusMinutes(10); // 10 minutes timeout
+        LocalDateTime timeoutThreshold = LocalDateTime.now().minusMinutes(10);
         List<GenerationJob> stuckJobs = jobRepository.findByStatusAndStartedAtBefore(JobStatus.PROCESSING, timeoutThreshold);
-        
+
         if (!stuckJobs.isEmpty()) {
-            log.warn("[ASYNC] Found {} stuck jobs. Marking them as FAILED.", stuckJobs.size());
+            log.warn("event=STUCK_JOBS_DETECTED count={}", stuckJobs.size());
             for (GenerationJob job : stuckJobs) {
                 job.setStatus(JobStatus.FAILED);
-                job.setErrorMessage("Job exceeded maximum execution time limit.");
+                job.setErrorMessage("Job exceeded maximum execution time limit (10 minutes).");
                 job.setCompletedAt(LocalDateTime.now());
                 jobRepository.save(job);
-                
+
+                metrics.incrementFailed();
+
                 sseRegistry.send(job.getId(), GenerationProgressEvent.failed(job.getId().toString(), job.getErrorMessage()));
                 sseRegistry.complete(job.getId());
+
+                log.warn("event=STUCK_JOB_FAILED jobId={} userId={} message=Timed out after 10 minutes",
+                        job.getId(), job.getUserId());
             }
         }
+    }
+
+    private void setJobMdc(GenerationJob job) {
+        MDC.put("jobId", job.getId().toString());
+        MDC.put("userId", job.getUserId().toString());
     }
 }

@@ -30,6 +30,7 @@ export interface GenerationStreamState {
   error: string | null;
   jobId: string | null;
   isFallback: boolean;
+  connectionAttempt: number;
 }
 
 interface SSEEvent {
@@ -42,31 +43,48 @@ interface SSEEvent {
   durationMs?: number;
   progress?: number;
   jobId?: string;
+  status?: string;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const POLL_INTERVAL_MS = 3000;
-const SSE_RECONNECT_DELAY_MS = 2000;
-const MAX_SSE_RETRIES = 3;
+const MAX_SSE_RETRIES = 5;
+const INITIAL_BACKOFF_MS = 1000;
+const MAX_BACKOFF_MS = 30000;
+const BACKOFF_MULTIPLIER = 2;
+
+// ─── Utility ────────────────────────────────────────────────────────────────────
+
+/**
+ * Calculates exponential backoff delay with jitter.
+ * Prevents thundering herd on reconnection storms.
+ */
+function getBackoffDelay(attempt: number): number {
+  const exponential = INITIAL_BACKOFF_MS * Math.pow(BACKOFF_MULTIPLIER, attempt);
+  const capped = Math.min(exponential, MAX_BACKOFF_MS);
+  // Add ±20% jitter
+  const jitter = capped * (0.8 + Math.random() * 0.4);
+  return Math.round(jitter);
+}
 
 // ─── Hook ───────────────────────────────────────────────────────────────────────
 
 /**
  * Custom hook for consuming the generation SSE stream.
  *
+ * Features:
+ * - Automatic exponential backoff reconnection (up to MAX_SSE_RETRIES)
+ * - Heartbeat-aware: resets retry counter on HEARTBEAT events
+ * - Graceful fallback to polling on SSE exhaustion
+ * - Handles all standardized events: INIT, PROGRESS, COMPLETED, FAILED, HEARTBEAT
+ * - Cleans up resources on unmount
+ *
  * Usage:
  * ```tsx
  * const { status, steps, progress, error } = useGenerationStream(jobId);
  * ```
- *
- * Lifecycle:
- * 1. Opens EventSource to `/api/v1/systems/jobs/{jobId}/stream`
- * 2. Maps backend events to step state updates
- * 3. On SSE failure → falls back to polling `GET /jobs/{jobId}`
- * 4. On `completed` event → sets jobId for result fetching
- * 5. Cleans up EventSource on unmount
  */
 export function useGenerationStream(jobId: string | null): GenerationStreamState {
   const [state, setState] = useState<GenerationStreamState>({
@@ -76,12 +94,15 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
     error: null,
     jobId: null,
     isFallback: false,
+    connectionAttempt: 0,
   });
 
   const eventSourceRef = useRef<EventSource | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sseRetriesRef = useRef(0);
   const mountedRef = useRef(true);
+  const lastHeartbeatRef = useRef<number>(Date.now());
 
   // ─── SSE Event Handlers ─────────────────────────────────────────────
 
@@ -90,7 +111,11 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
 
     switch (event.type) {
       case 'connected':
-        setState(prev => ({ ...prev, status: 'connected' }));
+        setState(prev => ({
+          ...prev,
+          status: 'connected',
+          connectionAttempt: sseRetriesRef.current,
+        }));
         break;
 
       case 'step_started':
@@ -189,9 +214,8 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           eventSourceRef.current = null;
         }
         setState(prev => {
-          // Only fall back if not already in a terminal state
           if (prev.status !== 'completed' && prev.status !== 'failed') {
-            return { ...prev, status: 'polling_fallback' };
+            return { ...prev, status: 'polling_fallback', isFallback: true };
           }
           return prev;
         });
@@ -205,7 +229,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
     (id: string) => {
       if (pollIntervalRef.current) return; // Already polling
 
-      setState(prev => ({ ...prev, status: 'polling_fallback' }));
+      setState(prev => ({ ...prev, status: 'polling_fallback', isFallback: true }));
 
       const poll = async () => {
         try {
@@ -245,7 +269,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           } else if (job.status === 'PROCESSING') {
             setState(prev => ({
               ...prev,
-              progress: Math.min(prev.progress + 10, 90),
+              progress: Math.min(prev.progress + 5, 90),
             }));
           }
         } catch {
@@ -260,76 +284,121 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
     []
   );
 
-  // ─── SSE Connection ─────────────────────────────────────────────────
+  // ─── SSE Connection with Exponential Backoff ────────────────────────
+
+  const connectSSE = useCallback(
+    (id: string) => {
+      if (!mountedRef.current) return;
+
+      const url = `${BASE_URL}/api/v1/systems/jobs/${id}/stream`;
+
+      try {
+        const es = new EventSource(url, { withCredentials: true });
+        eventSourceRef.current = es;
+
+        const handleStandardEvent = (e: MessageEvent) => {
+          try {
+            const event: SSEEvent = JSON.parse(e.data);
+            sseRetriesRef.current = 0; // Reset retries on successful message
+            handleEvent(event);
+          } catch {
+            console.warn('[SSE] Failed to parse event data:', e.data);
+          }
+        };
+
+        es.addEventListener('PROGRESS', handleStandardEvent);
+        es.addEventListener('COMPLETED', handleStandardEvent);
+        es.addEventListener('FAILED', handleStandardEvent);
+
+        // Handle initial "connected" event
+        es.addEventListener('INIT', (e: MessageEvent) => {
+          try {
+            const event: SSEEvent = JSON.parse(e.data);
+            sseRetriesRef.current = 0;
+            handleEvent(event);
+          } catch {
+            handleEvent({ type: 'connected' });
+          }
+        });
+
+        // Handle heartbeat — resets retry counter and tracks last heartbeat time
+        es.addEventListener('HEARTBEAT', () => {
+          sseRetriesRef.current = 0;
+          lastHeartbeatRef.current = Date.now();
+        });
+
+        es.onerror = () => {
+          // Don't reconnect if we're in a terminal state
+          setState(prev => {
+            if (prev.status === 'completed' || prev.status === 'failed') {
+              es.close();
+              eventSourceRef.current = null;
+              return prev;
+            }
+            return prev;
+          });
+
+          sseRetriesRef.current++;
+          const attempt = sseRetriesRef.current;
+
+          if (attempt >= MAX_SSE_RETRIES) {
+            console.warn(`[SSE] Max retries (${MAX_SSE_RETRIES}) reached — falling back to polling`);
+            es.close();
+            eventSourceRef.current = null;
+            startPollingFallback(id);
+            return;
+          }
+
+          const delay = getBackoffDelay(attempt);
+          console.warn(
+            `[SSE] Connection error (attempt ${attempt}/${MAX_SSE_RETRIES}). ` +
+            `Reconnecting in ${delay}ms...`
+          );
+
+          es.close();
+          eventSourceRef.current = null;
+
+          setState(prev => ({
+            ...prev,
+            status: 'connecting',
+            connectionAttempt: attempt,
+          }));
+
+          // Schedule reconnection with exponential backoff
+          reconnectTimeoutRef.current = setTimeout(() => {
+            if (mountedRef.current) {
+              connectSSE(id);
+            }
+          }, delay);
+        };
+      } catch {
+        // EventSource constructor failed (e.g., unsupported browser)
+        console.warn('[SSE] EventSource not available — using polling fallback');
+        startPollingFallback(id);
+      }
+    },
+    [handleEvent, startPollingFallback]
+  );
+
+  // ─── Main Effect ────────────────────────────────────────────────────
 
   useEffect(() => {
     mountedRef.current = true;
 
     if (!jobId) return;
 
-    setState(prev => ({
-      ...prev,
+    setState({
       status: 'connecting',
       steps: [],
       progress: 0,
       error: null,
       jobId,
-    }));
+      isFallback: false,
+      connectionAttempt: 0,
+    });
 
-    const url = `${BASE_URL}/api/v1/systems/jobs/${jobId}/stream`;
-
-    try {
-      const es = new EventSource(url, { withCredentials: true });
-      eventSourceRef.current = es;
-
-      const handleStandardEvent = (e: MessageEvent) => {
-        try {
-          const event: SSEEvent = JSON.parse(e.data);
-          sseRetriesRef.current = 0; // Reset retries on successful message
-          handleEvent(event);
-        } catch {
-          console.warn('[SSE] Failed to parse event data');
-        }
-      };
-
-      es.addEventListener('PROGRESS', handleStandardEvent);
-      es.addEventListener('COMPLETED', handleStandardEvent);
-      es.addEventListener('FAILED', handleStandardEvent);
-
-      // Handle initial "connected" event
-      es.addEventListener('INIT', (e: MessageEvent) => {
-        try {
-          const event: SSEEvent = JSON.parse(e.data);
-          handleEvent(event);
-        } catch {
-          handleEvent({ type: 'connected' });
-        }
-      });
-
-      // Handle heartbeat
-      es.addEventListener('HEARTBEAT', () => {
-        // Just resets idle timers if any. Keeps connection alive.
-        sseRetriesRef.current = 0;
-      });
-
-      es.onerror = () => {
-        sseRetriesRef.current++;
-        console.warn(
-          `[SSE] Connection error (attempt ${sseRetriesRef.current}/${MAX_SSE_RETRIES})`
-        );
-
-        if (sseRetriesRef.current >= MAX_SSE_RETRIES) {
-          console.warn('[SSE] Max retries reached — falling back to polling');
-          es.close();
-          eventSourceRef.current = null;
-          startPollingFallback(jobId);
-        }
-      };
-    } catch {
-      // EventSource constructor failed (e.g., unsupported browser)
-      console.warn('[SSE] EventSource not available — using polling fallback');
-      startPollingFallback(jobId);
-    }
+    sseRetriesRef.current = 0;
+    connectSSE(jobId);
 
     // ─── Cleanup ────────────────────────────────────────────────────
 
@@ -344,8 +413,12 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
       }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
     };
-  }, [jobId, handleEvent, startPollingFallback]);
+  }, [jobId, connectSSE]);
 
   return state;
 }
