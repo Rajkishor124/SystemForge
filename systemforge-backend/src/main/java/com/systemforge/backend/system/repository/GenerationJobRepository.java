@@ -18,4 +18,6 @@ public interface GenerationJobRepository extends JpaRepository<GenerationJob, UU
     Page<GenerationJob> findByUserIdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     long countByStatus(JobStatus status);
+
+    java.util.List<GenerationJob> findByStatusAndStartedAtBefore(JobStatus status, java.time.LocalDateTime startedAt);
 }

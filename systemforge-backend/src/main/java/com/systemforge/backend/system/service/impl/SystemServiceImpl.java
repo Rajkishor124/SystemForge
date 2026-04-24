@@ -27,6 +27,8 @@ import com.systemforge.backend.system.repository.GenerationJobRepository;
 import com.systemforge.backend.system.repository.SystemDefinitionRepository;
 import com.systemforge.backend.system.repository.UserSystemConfigRepository;
 import com.systemforge.backend.system.service.SystemService;
+import com.systemforge.backend.system.event.GenerationJobSubmittedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -57,6 +59,7 @@ public class SystemServiceImpl implements SystemService {
     private final SseEmitterRegistry sseRegistry;
     private final MabaOrchestrator mabaOrchestrator;
     private final ApplicationContext applicationContext;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Returns the Spring AOP proxy of this bean.
@@ -194,9 +197,8 @@ public class SystemServiceImpl implements SystemService {
         GenerationJob saved = jobRepository.save(job);
         log.info("Generation job created: jobId={}", saved.getId());
 
-        // CRITICAL: Use self() proxy reference — direct self.executeGenerationAsync()
-        // invocation bypasses Spring AOP, meaning @Async silently runs synchronously.
-        self().executeGenerationAsync(saved.getId());
+        // Publish event to trigger async worker AFTER commit
+        eventPublisher.publishEvent(new GenerationJobSubmittedEvent(saved.getId()));
 
         return toJobDto(saved);
     }
@@ -207,114 +209,6 @@ public class SystemServiceImpl implements SystemService {
         GenerationJob job = jobRepository.findByIdAndUserId(jobId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("JOB_001", "Job not found with id: " + jobId));
         return toJobDto(job);
-    }
-
-    // ─── Async Worker ─────────────────────────────────────────────────────
-
-    /**
-     * Executes the actual AI generation in a background thread.
-     *
-     * <p>Runs on the dedicated "aiGenerationExecutor" pool to avoid
-     * blocking Tomcat threads. MDC context (correlationId) is propagated
-     * by the {@link com.systemforge.backend.common.config.AsyncConfig.MdcTaskDecorator}.
-     *
-     * <p>Emits SSE events at each stage for real-time client progress.
-     * SSE is optional — if no listener is connected, events are silently dropped.
-     *
-     * <p>On completion, updates the job record and the user's config.
-     * On failure, records the error message in the job for client retrieval.
-     */
-    @Async("aiGenerationExecutor")
-    public void executeGenerationAsync(UUID jobId) {
-        log.info("[ASYNC] Starting MABA generation for jobId={}", jobId);
-
-        // Transition to PROCESSING
-        GenerationJob job = jobRepository.findById(jobId).orElse(null);
-        if (job == null) {
-            log.error("[ASYNC] Job not found: {}", jobId);
-            return;
-        }
-
-        job.setStatus(JobStatus.PROCESSING);
-        job.setStartedAt(LocalDateTime.now());
-        jobRepository.save(job);
-
-        MabaContext mabaContext = null;
-
-        try {
-            // ─── Step 1: Validate & Load Config ───────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, 8));
-            long stepStart = System.currentTimeMillis();
-
-            UserSystemConfig config = configRepository.findById(job.getConfigId())
-                    .orElseThrow(() -> new RuntimeException("Config not found: " + job.getConfigId()));
-
-            long stepDuration = System.currentTimeMillis() - stepStart;
-            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
-                    "Config Validation", 1, 8, "Config loaded and validated", stepDuration));
-            sseRegistry.send(jobId, GenerationProgressEvent.progress(5));
-
-            // ─── Step 2: Execute MABA Pipeline ────────────────────────────
-            // Build user requirements string from the config for the multi-agent pipeline
-            String userRequirements = buildRequirementsFromConfig(config);
-
-            mabaContext = new MabaContext(userRequirements);
-            mabaContext.setUserId(job.getUserId());
-            mabaContext.setJobId(jobId);
-
-            // This runs all 7 phases (Orchestrator → RAG + Requirements → Architect →
-            // DB + API → Scale + Security → Planning → Synthesis)
-            // SSE events are emitted by the MabaOrchestrator at each phase boundary
-            mabaOrchestrator.execute(mabaContext);
-
-            if ("FAILED".equals(mabaContext.getStatus())) {
-                throw new RuntimeException("MABA pipeline failed: " + mabaContext.getFailureReason());
-            }
-
-            String outputJson = mabaContext.getFinalDocument();
-
-            // ─── Step 3: Persist Results ──────────────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Persisting Results", 8, 8));
-            stepStart = System.currentTimeMillis();
-
-            config.setGeneratedOutputJson(outputJson);
-            config.setGenerated(true);
-            configRepository.save(config);
-
-            job.setStatus(JobStatus.COMPLETED);
-            job.setResultJson(outputJson);
-            job.setMabaMetadata(mabaContext.toMetadataJson());
-            job.setCompletedAt(LocalDateTime.now());
-            jobRepository.save(job);
-
-            stepDuration = System.currentTimeMillis() - stepStart;
-            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
-                    "Persisting Results", 8, 8, "Results saved", stepDuration));
-
-            // ─── Final: Completed ─────────────────────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
-            sseRegistry.complete(jobId);
-
-            log.info("[ASYNC] MABA generation completed: jobId={}, durationMs={}, totalTokens={}",
-                    jobId,
-                    java.time.Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis(),
-                    mabaContext.getTotalPromptTokens() + mabaContext.getTotalCompletionTokens());
-
-        } catch (Exception e) {
-            log.error("[ASYNC] Generation failed for jobId={}: {}", jobId, e.getMessage(), e);
-
-            job.setStatus(JobStatus.FAILED);
-            job.setErrorMessage(e.getMessage());
-            if (mabaContext != null) {
-                job.setMabaMetadata(mabaContext.toMetadataJson());
-            }
-            job.setCompletedAt(LocalDateTime.now());
-            jobRepository.save(job);
-
-            // Notify SSE listener of failure
-            sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), e.getMessage()));
-            sseRegistry.complete(jobId);
-        }
     }
 
     // ─── Mapping ──────────────────────────────────────────────────────────
@@ -333,25 +227,5 @@ public class SystemServiceImpl implements SystemService {
                 .completedAt(job.getCompletedAt())
                 .createdAt(job.getCreatedAt())
                 .build();
-    }
-
-    // ─── Config → Requirements Builder ──────────────────────────────────
-
-    /**
-     * Converts a stored UserSystemConfig into a natural-language requirements
-     * string for the MABA pipeline input.
-     */
-    private String buildRequirementsFromConfig(UserSystemConfig config) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Design a backend system with the following specifications:\n\n");
-        sb.append("Application Name: ").append(config.getConfigName()).append("\n");
-        sb.append("Application Type: ").append(config.getAppType()).append("\n");
-        sb.append("Application Scale: ").append(config.getAppScale()).append("\n");
-
-        if (config.getSelectedSystemsJson() != null && !config.getSelectedSystemsJson().isBlank()) {
-            sb.append("\nSelected Systems/Features:\n").append(config.getSelectedSystemsJson()).append("\n");
-        }
-
-        return sb.toString();
     }
 }

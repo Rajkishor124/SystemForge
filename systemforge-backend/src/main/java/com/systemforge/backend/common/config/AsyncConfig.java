@@ -63,7 +63,7 @@ public class AsyncConfig implements AsyncConfigurer {
         aiExecutor.setMaxPoolSize(50);
         aiExecutor.setQueueCapacity(100);
         aiExecutor.setThreadNamePrefix("ai-gen-");
-        aiExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        aiExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         aiExecutor.setTaskDecorator(new MdcTaskDecorator());
         aiExecutor.setWaitForTasksToCompleteOnShutdown(true);
         aiExecutor.setAwaitTerminationSeconds(30);

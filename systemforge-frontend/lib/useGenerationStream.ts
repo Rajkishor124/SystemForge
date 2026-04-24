@@ -282,7 +282,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
       const es = new EventSource(url, { withCredentials: true });
       eventSourceRef.current = es;
 
-      es.addEventListener('generation-progress', (e: MessageEvent) => {
+      const handleStandardEvent = (e: MessageEvent) => {
         try {
           const event: SSEEvent = JSON.parse(e.data);
           sseRetriesRef.current = 0; // Reset retries on successful message
@@ -290,17 +290,26 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
         } catch {
           console.warn('[SSE] Failed to parse event data');
         }
-      });
+      };
 
-      // Handle initial "connected" event (different event name)
-      es.addEventListener('connected', (e: MessageEvent) => {
+      es.addEventListener('PROGRESS', handleStandardEvent);
+      es.addEventListener('COMPLETED', handleStandardEvent);
+      es.addEventListener('FAILED', handleStandardEvent);
+
+      // Handle initial "connected" event
+      es.addEventListener('INIT', (e: MessageEvent) => {
         try {
           const event: SSEEvent = JSON.parse(e.data);
           handleEvent(event);
         } catch {
-          // connected event might be plain text
           handleEvent({ type: 'connected' });
         }
+      });
+
+      // Handle heartbeat
+      es.addEventListener('HEARTBEAT', () => {
+        // Just resets idle timers if any. Keeps connection alive.
+        sseRetriesRef.current = 0;
       });
 
       es.onerror = () => {

@@ -1,9 +1,11 @@
 package com.systemforge.backend.common.sse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.systemforge.backend.system.dto.GenerationProgressEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -78,8 +80,9 @@ public class SseEmitterRegistry {
             for (Object event : history) {
                 try {
                     String json = objectMapper.writeValueAsString(event);
+                    String eventName = getEventName(event);
                     emitter.send(SseEmitter.event()
-                            .name("generation-progress")
+                            .name(eventName)
                             .data(json));
                 } catch (Exception e) {
                     log.warn("[SSE] Failed to replay event for jobId={}: {}", jobId, e.getMessage());
@@ -110,8 +113,9 @@ public class SseEmitterRegistry {
 
         try {
             String json = objectMapper.writeValueAsString(event);
+            String eventName = getEventName(event);
             emitter.send(SseEmitter.event()
-                    .name("generation-progress")
+                    .name(eventName)
                     .data(json));
             log.debug("[SSE] Sent event for jobId={}: {}", jobId, json.substring(0, Math.min(json.length(), 100)));
         } catch (IOException e) {
@@ -157,7 +161,7 @@ public class SseEmitterRegistry {
         emitters.forEach((jobId, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
-                        .name("generation-progress")
+                        .name("PROGRESS")
                         .data(shutdownEvent));
                 emitter.complete();
                 log.debug("[SSE] Shutdown: closed emitter for jobId={}", jobId);
@@ -169,5 +173,34 @@ public class SseEmitterRegistry {
 
         emitters.clear();
         eventHistory.clear();
+    }
+
+    @Scheduled(fixedRate = 15000)
+    public void sendHeartbeats() {
+        if (emitters.isEmpty()) return;
+        
+        String heartbeatData = "{\"type\":\"heartbeat\",\"data\":\"ping\"}";
+        emitters.forEach((jobId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("HEARTBEAT")
+                        .data(heartbeatData));
+            } catch (Exception e) {
+                log.debug("[SSE] Heartbeat failed for jobId={}, removing emitter", jobId);
+                emitters.remove(jobId);
+                try { emitter.completeWithError(e); } catch (Exception ignored) {}
+            }
+        });
+    }
+
+    private String getEventName(Object event) {
+        if (event instanceof GenerationProgressEvent progressEvent) {
+            return switch (progressEvent.getType()) {
+                case "completed" -> "COMPLETED";
+                case "failed" -> "FAILED";
+                default -> "PROGRESS";
+            };
+        }
+        return "PROGRESS";
     }
 }

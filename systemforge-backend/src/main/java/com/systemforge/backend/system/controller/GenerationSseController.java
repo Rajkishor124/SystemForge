@@ -60,31 +60,38 @@ public class GenerationSseController {
                     """
     )
     public SseEmitter streamJobProgress(@PathVariable UUID jobId) {
-        UUID userId = securityService.getAuthenticatedUserId();
-        log.info("[SSE] Client subscribing to job stream: jobId={}, userId={}", jobId, userId);
-
-        GenerationJobDto job = systemService.getJobStatus(userId, jobId);
-
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
-        sseRegistry.register(jobId, emitter);
-
-        if (job.getStatus() == JobStatus.COMPLETED) {
-            sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
-            sseRegistry.complete(jobId);
-            return emitter;
-        } else if (job.getStatus() == JobStatus.FAILED) {
-            sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
-            sseRegistry.complete(jobId);
-            return emitter;
-        }
-
-        // Send initial connection event
+        
         try {
+            UUID userId = securityService.getAuthenticatedUserId();
+            log.info("[SSE] Client subscribing to job stream: jobId={}, userId={}", jobId, userId);
+
+            GenerationJobDto job = systemService.getJobStatus(userId, jobId);
+            sseRegistry.register(jobId, emitter);
+
+            if (job.getStatus() == JobStatus.COMPLETED) {
+                sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
+                sseRegistry.complete(jobId);
+                return emitter;
+            } else if (job.getStatus() == JobStatus.FAILED) {
+                sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
+                sseRegistry.complete(jobId);
+                return emitter;
+            }
+
+            // Send initial connection event
             emitter.send(SseEmitter.event()
-                    .name("connected")
+                    .name("INIT")
                     .data("{\"type\":\"connected\",\"jobId\":\"" + jobId + "\"}"));
-        } catch (IOException e) {
-            log.warn("[SSE] Failed to send initial event for jobId={}", jobId);
+            
+        } catch (Exception e) {
+            log.error("[SSE] Failed to establish stream for jobId={}: {}", jobId, e.getMessage());
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("FAILED")
+                        .data("{\"type\":\"failed\",\"errorMessage\":\"" + e.getMessage() + "\"}"));
+                emitter.complete();
+            } catch (IOException ignored) {}
         }
 
         return emitter;

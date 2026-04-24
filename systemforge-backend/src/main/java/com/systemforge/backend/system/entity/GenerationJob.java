@@ -85,5 +85,13 @@ public class GenerationJob extends BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "maba_metadata", columnDefinition = "jsonb")
     private String mabaMetadata;
+
+    @Column(name = "retry_count", nullable = false)
+    @Builder.Default
+    private Integer retryCount = 0;
+
+    @Column(name = "max_retries", nullable = false)
+    @Builder.Default
+    private Integer maxRetries = 3;
 }
 
