@@ -20,4 +20,9 @@ public interface GenerationJobRepository extends JpaRepository<GenerationJob, UU
     long countByStatus(JobStatus status);
 
     java.util.List<GenerationJob> findByStatusAndStartedAtBefore(JobStatus status, java.time.LocalDateTime startedAt);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("UPDATE GenerationJob j SET j.status = :newStatus, j.startedAt = :startedAt WHERE j.id = :jobId AND j.status = :expectedStatus")
+    int updateStatusConditionally(UUID jobId, JobStatus newStatus, JobStatus expectedStatus, java.time.LocalDateTime startedAt);
 }

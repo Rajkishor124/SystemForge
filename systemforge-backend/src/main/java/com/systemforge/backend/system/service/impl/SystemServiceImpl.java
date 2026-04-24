@@ -8,6 +8,7 @@ import com.systemforge.backend.common.enums.JobType;
 import com.systemforge.backend.common.enums.SystemType;
 import com.systemforge.backend.common.exception.BusinessException;
 import com.systemforge.backend.common.exception.ResourceNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import com.systemforge.backend.common.security.InputSanitizer;
 import com.systemforge.backend.common.sse.SseEmitterRegistry;
 import com.systemforge.backend.architect.maba.MabaContext;
@@ -44,7 +45,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationContext;
-
+import org.springframework.beans.factory.annotation.Qualifier;
+import java.util.concurrent.Executor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -60,6 +63,7 @@ public class SystemServiceImpl implements SystemService {
     private final MabaOrchestrator mabaOrchestrator;
     private final ApplicationContext applicationContext;
     private final ApplicationEventPublisher eventPublisher;
+    private final @Qualifier("aiGenerationExecutor") Executor aiExecutor;
 
     /**
      * Returns the Spring AOP proxy of this bean.
@@ -186,6 +190,14 @@ public class SystemServiceImpl implements SystemService {
                     HttpStatus.CONFLICT);
         }
 
+        // Check system backpressure (Executor Overload)
+        if (aiExecutor instanceof ThreadPoolTaskExecutor taskExecutor) {
+            if (taskExecutor.getThreadPoolExecutor().getQueue().remainingCapacity() == 0) {
+                log.warn("System overloaded: AI Generation queue is full");
+                throw new BusinessException("SYS_004", "System is busy, please try again", HttpStatus.SERVICE_UNAVAILABLE);
+            }
+        }
+
         // Create a PENDING job
         GenerationJob job = GenerationJob.builder()
                 .userId(userId)
@@ -206,8 +218,13 @@ public class SystemServiceImpl implements SystemService {
     @Override
     @Transactional(readOnly = true)
     public GenerationJobDto getJobStatus(UUID userId, UUID jobId) {
-        GenerationJob job = jobRepository.findByIdAndUserId(jobId, userId)
+        GenerationJob job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("JOB_001", "Job not found with id: " + jobId));
+                
+        if (!job.getUserId().equals(userId)) {
+            throw new AccessDeniedException("You do not have permission to access this job's stream.");
+        }
+        
         return toJobDto(job);
     }
 

@@ -59,10 +59,16 @@ public class GenerationWorker {
     private void executeWithRetries(GenerationJob job) {
         UUID jobId = job.getId();
         
-        // Transition to PROCESSING
+        // Transition to PROCESSING with atomic check-and-set
+        LocalDateTime now = LocalDateTime.now();
+        int updated = jobRepository.updateStatusConditionally(jobId, JobStatus.PROCESSING, JobStatus.PENDING, now);
+        if (updated == 0) {
+            log.warn("[ASYNC] Job {} is not PENDING. Another worker may have picked it up. Exiting.", jobId);
+            return;
+        }
+        
         job.setStatus(JobStatus.PROCESSING);
-        job.setStartedAt(LocalDateTime.now());
-        jobRepository.save(job);
+        job.setStartedAt(now);
 
         MabaContext mabaContext = null;
 
@@ -100,13 +106,13 @@ public class GenerationWorker {
 
             config.setGeneratedOutputJson(outputJson);
             config.setGenerated(true);
-            configRepository.save(config);
+            configRepository.saveAndFlush(config);
 
             job.setStatus(JobStatus.COMPLETED);
             job.setResultJson(outputJson);
             job.setMabaMetadata(mabaContext.toMetadataJson());
             job.setCompletedAt(LocalDateTime.now());
-            jobRepository.save(job);
+            jobRepository.saveAndFlush(job);
 
             stepDuration = System.currentTimeMillis() - stepStart;
             sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
@@ -133,7 +139,7 @@ public class GenerationWorker {
                     job.setMabaMetadata(mabaContext.toMetadataJson());
                 }
                 job.setCompletedAt(LocalDateTime.now());
-                jobRepository.save(job);
+                jobRepository.saveAndFlush(job);
 
                 // Notify SSE listener of failure
                 sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
@@ -142,7 +148,7 @@ public class GenerationWorker {
                 log.warn("[ASYNC] Retrying job {}. Attempt {}/{}", jobId, job.getRetryCount(), job.getMaxRetries());
                 job.setStatus(JobStatus.PENDING);
                 job.setErrorMessage("Failed attempt " + job.getRetryCount() + ": " + e.getMessage());
-                jobRepository.save(job);
+                jobRepository.saveAndFlush(job);
                 
                 // Retry immediately (for a real system, you might want an exponential backoff via ScheduledExecutor)
                 executeWithRetries(job);

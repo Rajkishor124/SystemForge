@@ -47,8 +47,9 @@ public class SseEmitterRegistry {
     /**
      * History of events for active jobs to support client reconnection.
      * Prevents clients from losing animation state on page refresh.
+     * Bounded to last 50 events to prevent memory leaks.
      */
-    private final ConcurrentMap<UUID, List<Object>> eventHistory = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, java.util.Deque<Object>> eventHistory = new ConcurrentHashMap<>();
 
     /**
      * Registers an emitter for a job.
@@ -75,7 +76,7 @@ public class SseEmitterRegistry {
         });
 
         // Replay history for reconnecting clients
-        List<Object> history = eventHistory.get(jobId);
+        java.util.Deque<Object> history = eventHistory.get(jobId);
         if (history != null && !history.isEmpty()) {
             for (Object event : history) {
                 try {
@@ -102,8 +103,12 @@ public class SseEmitterRegistry {
      * @param event the event payload (will be serialized to JSON)
      */
     public void send(UUID jobId, Object event) {
-        // Cache event for any future reconnects
-        eventHistory.computeIfAbsent(jobId, k -> new CopyOnWriteArrayList<>()).add(event);
+        // Cache event for any future reconnects (Bounded to 50)
+        java.util.Deque<Object> history = eventHistory.computeIfAbsent(jobId, k -> new java.util.concurrent.ConcurrentLinkedDeque<>());
+        history.addLast(event);
+        while (history.size() > 50) {
+            history.pollFirst();
+        }
 
         SseEmitter emitter = emitters.get(jobId);
         if (emitter == null) {
