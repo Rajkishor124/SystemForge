@@ -35,8 +35,9 @@ public interface GenerationJobRepository extends JpaRepository<GenerationJob, UU
      */
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.transaction.annotation.Transactional
-    @org.springframework.data.jpa.repository.Query("UPDATE GenerationJob j SET j.status = 'FAILED', j.errorMessage = :reason, j.completedAt = :now WHERE j.status IN :statuses")
+    @org.springframework.data.jpa.repository.Query("UPDATE GenerationJob j SET j.status = :newStatus, j.errorMessage = :reason, j.completedAt = :now WHERE j.status IN :statuses")
     int failAllOrphanedJobs(@org.springframework.data.repository.query.Param("statuses") java.util.List<JobStatus> statuses,
+                            @org.springframework.data.repository.query.Param("newStatus") JobStatus newStatus,
                             @org.springframework.data.repository.query.Param("reason") String reason,
                             @org.springframework.data.repository.query.Param("now") java.time.LocalDateTime now);
 }

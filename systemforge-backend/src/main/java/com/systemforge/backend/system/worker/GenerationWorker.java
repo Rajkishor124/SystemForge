@@ -58,6 +58,7 @@ public class GenerationWorker {
     public void failOrphanedJobsOnStartup() {
         int failed = jobRepository.failAllOrphanedJobs(
                 List.of(JobStatus.PENDING, JobStatus.PROCESSING),
+                JobStatus.FAILED,
                 "Server restarted — job worker was lost. Please retry.",
                 LocalDateTime.now());
         if (failed > 0) {
