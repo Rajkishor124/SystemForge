@@ -48,8 +48,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.concurrent.Executor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class SystemServiceImpl implements SystemService {
 
@@ -63,8 +63,35 @@ public class SystemServiceImpl implements SystemService {
     private final MabaOrchestrator mabaOrchestrator;
     private final ApplicationContext applicationContext;
     private final ApplicationEventPublisher eventPublisher;
-    private final @Qualifier("aiGenerationExecutor") Executor aiExecutor;
+    private final Executor aiExecutor;
     private final com.systemforge.backend.common.metrics.GenerationMetrics generationMetrics;
+
+    public SystemServiceImpl(
+            SystemDefinitionRepository systemDefinitionRepository,
+            UserSystemConfigRepository configRepository,
+            GenerationJobRepository jobRepository,
+            SystemMapper systemMapper,
+            RecommendationService recommendationService,
+            ObjectMapper objectMapper,
+            SseEmitterRegistry sseRegistry,
+            MabaOrchestrator mabaOrchestrator,
+            ApplicationContext applicationContext,
+            ApplicationEventPublisher eventPublisher,
+            @Qualifier("aiGenerationExecutor") Executor aiExecutor,
+            com.systemforge.backend.common.metrics.GenerationMetrics generationMetrics) {
+        this.systemDefinitionRepository = systemDefinitionRepository;
+        this.configRepository = configRepository;
+        this.jobRepository = jobRepository;
+        this.systemMapper = systemMapper;
+        this.recommendationService = recommendationService;
+        this.objectMapper = objectMapper;
+        this.sseRegistry = sseRegistry;
+        this.mabaOrchestrator = mabaOrchestrator;
+        this.applicationContext = applicationContext;
+        this.eventPublisher = eventPublisher;
+        this.aiExecutor = aiExecutor;
+        this.generationMetrics = generationMetrics;
+    }
 
     /**
      * Returns the Spring AOP proxy of this bean.
