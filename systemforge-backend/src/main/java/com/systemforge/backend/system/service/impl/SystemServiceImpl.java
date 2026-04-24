@@ -219,11 +219,12 @@ public class SystemServiceImpl implements SystemService {
         }
 
         // Check if there is already an active job for this config
-        var activeJob = jobRepository.findFirstByConfigIdAndStatusInOrderByCreatedAtDesc(
+        var activeJobs = jobRepository.findActiveJobsForConfig(
                 configId, List.of(JobStatus.PENDING, JobStatus.PROCESSING));
-        if (activeJob.isPresent()) {
-            log.info("Found existing active job {} for config {}. Returning existing job.", activeJob.get().getId(), configId);
-            return toJobDto(activeJob.get());
+        if (!activeJobs.isEmpty()) {
+            var activeJob = activeJobs.get(0);
+            log.info("Found existing active job {} for config {}. Returning existing job.", activeJob.getId(), configId);
+            return toJobDto(activeJob);
         }
 
         // Check system backpressure (Executor Overload)
