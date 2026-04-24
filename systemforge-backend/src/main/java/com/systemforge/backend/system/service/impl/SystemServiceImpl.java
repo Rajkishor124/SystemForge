@@ -218,6 +218,14 @@ public class SystemServiceImpl implements SystemService {
                     HttpStatus.CONFLICT);
         }
 
+        // Check if there is already an active job for this config
+        var activeJob = jobRepository.findFirstByConfigIdAndStatusInOrderByCreatedAtDesc(
+                configId, List.of(JobStatus.PENDING, JobStatus.PROCESSING));
+        if (activeJob.isPresent()) {
+            log.info("Found existing active job {} for config {}. Returning existing job.", activeJob.get().getId(), configId);
+            return toJobDto(activeJob.get());
+        }
+
         // Check system backpressure (Executor Overload)
         if (aiExecutor instanceof ThreadPoolTaskExecutor taskExecutor) {
             if (taskExecutor.getThreadPoolExecutor().getQueue().remainingCapacity() == 0) {

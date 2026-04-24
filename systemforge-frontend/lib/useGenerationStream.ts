@@ -248,14 +248,8 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
 
       const poll = async () => {
         try {
-          const res = await fetch(
-            `${BASE_URL}/api/v1/systems/jobs/${id}`,
-            { credentials: 'include' }
-          );
-          if (!res.ok) return;
-
-          const json = await res.json();
-          const job = json.data;
+          const res = await api<any>(`/api/v1/systems/jobs/${id}`);
+          const job = res.data;
 
           if (!mountedRef.current) return;
 
