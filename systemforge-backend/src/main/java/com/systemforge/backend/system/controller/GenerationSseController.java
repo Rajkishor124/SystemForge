@@ -51,7 +51,7 @@ import java.util.UUID;
 @Tag(name = "Generation Progress", description = "Real-time SSE stream for AI generation progress")
 public class GenerationSseController {
 
-    private static final long SSE_TIMEOUT_MS = 120_000L; // 2 minutes
+    private static final long SSE_TIMEOUT_MS = 600_000L; // 10 minutes — must exceed MABA pipeline duration (3-8 min)
 
     private final SseEmitterRegistry sseRegistry;
     private final SecurityService securityService;
