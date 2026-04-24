@@ -21,6 +21,7 @@ export type StreamStatus =
   | 'streaming'
   | 'completed'
   | 'failed'
+  | 'token_expired'
   | 'polling_fallback';
 
 export interface GenerationStreamState {
@@ -220,6 +221,20 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           return prev;
         });
         break;
+
+      case 'token_expired':
+        // JWT expired during SSE reconnect — stop retrying and notify UI
+        console.warn('[SSE] Token expired — authentication required');
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
+        }
+        setState(prev => ({
+          ...prev,
+          status: 'token_expired',
+          error: event.errorMessage ?? 'Authentication token expired. Please refresh.',
+        }));
+        break;
     }
   }, []);
 
@@ -325,6 +340,16 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
         es.addEventListener('HEARTBEAT', () => {
           sseRetriesRef.current = 0;
           lastHeartbeatRef.current = Date.now();
+        });
+
+        // Handle expired JWT during reconnect — stop retrying, notify UI
+        es.addEventListener('TOKEN_EXPIRED', (e: MessageEvent) => {
+          try {
+            const event: SSEEvent = JSON.parse(e.data);
+            handleEvent(event);
+          } catch {
+            handleEvent({ type: 'token_expired', errorMessage: 'Token expired' });
+          }
         });
 
         es.onerror = () => {

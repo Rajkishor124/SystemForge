@@ -67,6 +67,10 @@ systemforge:
   job:
     stuck-timeout-minutes: 10
     max-retries: 3
+  alerting:
+    failure-rate-threshold: 0.3    # 30% failure rate triggers alert
+    active-jobs-limit: 8           # Low for dev visibility
+    sse-connections-limit: 50      # Low for dev visibility
 
 # ─── RESILIENCE4J (lower thresholds for testing) ─────────────────────────────
 resilience4j:

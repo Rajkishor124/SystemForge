@@ -6,12 +6,14 @@ import com.systemforge.backend.system.dto.GenerationProgressEvent;
 import com.systemforge.backend.system.dto.GenerationJobDto;
 import com.systemforge.backend.common.enums.JobStatus;
 import com.systemforge.backend.system.service.SystemService;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -38,7 +40,9 @@ import java.util.UUID;
  * If the SSE connection drops, the client falls back to polling.
  *
  * <p>Security: job ownership is verified before stream creation.
- * Unauthorized access throws AccessDeniedException.
+ * Expired JWT tokens during SSE reconnect are handled gracefully
+ * with a TOKEN_EXPIRED event that the frontend can use to trigger
+ * a token refresh before retrying.
  */
 @RestController
 @RequestMapping("/api/v1/systems")
@@ -87,12 +91,31 @@ public class GenerationSseController {
                 return emitter;
             }
 
-            // Send initial connection event
+            // Send initial connection event with current status
             emitter.send(SseEmitter.event()
                     .name("INIT")
                     .data("{\"type\":\"connected\",\"jobId\":\"" + jobId + "\",\"status\":\"" + job.getStatus() + "\"}"));
 
             log.info("event=SSE_CONNECTED jobId={} userId={} currentStatus={}", jobId, userId, job.getStatus());
+
+        } catch (ExpiredJwtException e) {
+            // JWT expired during SSE reconnect — notify frontend to refresh token
+            log.warn("event=SSE_TOKEN_EXPIRED jobId={} message=JWT expired during SSE reconnect", jobId);
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("TOKEN_EXPIRED")
+                        .data("{\"type\":\"token_expired\",\"errorMessage\":\"Authentication token expired. Please refresh and reconnect.\"}"));
+                emitter.complete();
+            } catch (IOException ignored) {}
+
+        } catch (AuthenticationCredentialsNotFoundException e) {
+            log.warn("event=SSE_AUTH_MISSING jobId={} message=No authentication credentials found", jobId);
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("TOKEN_EXPIRED")
+                        .data("{\"type\":\"token_expired\",\"errorMessage\":\"Authentication required. Please log in.\"}"));
+                emitter.complete();
+            } catch (IOException ignored) {}
 
         } catch (AccessDeniedException e) {
             log.warn("event=SSE_ACCESS_DENIED jobId={} error={}", jobId, e.getMessage());
@@ -102,16 +125,25 @@ public class GenerationSseController {
                         .data("{\"type\":\"failed\",\"errorMessage\":\"Access denied\"}"));
                 emitter.complete();
             } catch (IOException ignored) {}
+
         } catch (Exception e) {
             log.error("event=SSE_SETUP_FAILED jobId={} error={}", jobId, e.getMessage());
             try {
                 emitter.send(SseEmitter.event()
                         .name("FAILED")
-                        .data("{\"type\":\"failed\",\"errorMessage\":\"" + e.getMessage() + "\"}"));
+                        .data("{\"type\":\"failed\",\"errorMessage\":\"" + escapeJson(e.getMessage()) + "\"}"));
                 emitter.complete();
             } catch (IOException ignored) {}
         }
 
         return emitter;
+    }
+
+    /**
+     * Escapes quotes in error messages to prevent broken JSON in SSE data payloads.
+     */
+    private String escapeJson(String input) {
+        if (input == null) return "Unknown error";
+        return input.replace("\"", "\\\"").replace("\n", " ");
     }
 }

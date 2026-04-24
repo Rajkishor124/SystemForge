@@ -4,7 +4,7 @@ import com.systemforge.backend.architect.maba.MabaContext;
 import com.systemforge.backend.architect.maba.MabaOrchestrator;
 import com.systemforge.backend.common.enums.JobStatus;
 import com.systemforge.backend.common.metrics.GenerationMetrics;
-import com.systemforge.backend.common.sse.SseEmitterRegistry;
+import com.systemforge.backend.common.event.EventBus;
 import com.systemforge.backend.system.dto.GenerationProgressEvent;
 import com.systemforge.backend.system.entity.GenerationJob;
 import com.systemforge.backend.system.entity.UserSystemConfig;
@@ -43,7 +43,7 @@ public class GenerationWorker {
 
     private final GenerationJobRepository jobRepository;
     private final UserSystemConfigRepository configRepository;
-    private final SseEmitterRegistry sseRegistry;
+    private final EventBus eventBus;
     private final MabaOrchestrator mabaOrchestrator;
     private final GenerationMetrics metrics;
 
@@ -91,16 +91,16 @@ public class GenerationWorker {
 
         try {
             // ─── Step 1: Validate & Load Config ───────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, 8));
+            eventBus.publish(jobId, GenerationProgressEvent.stepStarted("Config Validation", 1, 8));
             long stepStart = System.currentTimeMillis();
 
             UserSystemConfig config = configRepository.findById(job.getConfigId())
                     .orElseThrow(() -> new RuntimeException("Config not found: " + job.getConfigId()));
 
             long stepDuration = System.currentTimeMillis() - stepStart;
-            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
+            eventBus.publish(jobId, GenerationProgressEvent.stepCompleted(
                     "Config Validation", 1, 8, "Config loaded and validated", stepDuration));
-            sseRegistry.send(jobId, GenerationProgressEvent.progress(5));
+            eventBus.publish(jobId, GenerationProgressEvent.progress(5));
             log.debug("event=STEP_COMPLETED jobId={} step=ConfigValidation durationMs={}", jobId, stepDuration);
 
             // ─── Step 2: Execute MABA Pipeline ────────────────────────────
@@ -120,7 +120,7 @@ public class GenerationWorker {
             String outputJson = mabaContext.getFinalDocument();
 
             // ─── Step 3: Persist Results ──────────────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.stepStarted("Persisting Results", 8, 8));
+            eventBus.publish(jobId, GenerationProgressEvent.stepStarted("Persisting Results", 8, 8));
             stepStart = System.currentTimeMillis();
 
             config.setGeneratedOutputJson(outputJson);
@@ -134,12 +134,12 @@ public class GenerationWorker {
             jobRepository.saveAndFlush(job);
 
             stepDuration = System.currentTimeMillis() - stepStart;
-            sseRegistry.send(jobId, GenerationProgressEvent.stepCompleted(
+            eventBus.publish(jobId, GenerationProgressEvent.stepCompleted(
                     "Persisting Results", 8, 8, "Results saved", stepDuration));
 
             // ─── Final: Completed ─────────────────────────────────────────
-            sseRegistry.send(jobId, GenerationProgressEvent.completed(jobId.toString()));
-            sseRegistry.complete(jobId);
+            eventBus.publish(jobId, GenerationProgressEvent.completed(jobId.toString()));
+            eventBus.complete(jobId);
 
             long totalDurationMs = Duration.between(job.getStartedAt(), job.getCompletedAt()).toMillis();
             long totalTokens = mabaContext.getTotalPromptTokens() + mabaContext.getTotalCompletionTokens();
@@ -168,8 +168,8 @@ public class GenerationWorker {
                 metrics.incrementFailed();
 
                 // Notify SSE listener of failure
-                sseRegistry.send(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
-                sseRegistry.complete(jobId);
+                eventBus.publish(jobId, GenerationProgressEvent.failed(jobId.toString(), job.getErrorMessage()));
+                eventBus.complete(jobId);
 
                 log.error("event=JOB_FAILED jobId={} userId={} status=FAILED retryCount={} maxRetries={} lastError={}",
                         jobId, job.getUserId(), job.getRetryCount(), job.getMaxRetries(), e.getMessage());
@@ -223,8 +223,8 @@ public class GenerationWorker {
 
                 metrics.incrementFailed();
 
-                sseRegistry.send(job.getId(), GenerationProgressEvent.failed(job.getId().toString(), job.getErrorMessage()));
-                sseRegistry.complete(job.getId());
+                eventBus.publish(job.getId(), GenerationProgressEvent.failed(job.getId().toString(), job.getErrorMessage()));
+                eventBus.complete(job.getId());
 
                 log.warn("event=STUCK_JOB_FAILED jobId={} userId={} message=Timed out after 10 minutes",
                         job.getId(), job.getUserId());

@@ -78,3 +78,7 @@ systemforge:
   job:
     stuck-timeout-minutes: 15
     max-retries: 3
+  alerting:
+    failure-rate-threshold: 0.2    # 20% failure rate triggers alert in prod
+    active-jobs-limit: 40          # Production capacity
+    sse-connections-limit: 300     # Production SSE limit
