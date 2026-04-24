@@ -28,4 +28,15 @@ public interface GenerationJobRepository extends JpaRepository<GenerationJob, UU
 
     @org.springframework.data.jpa.repository.Query("SELECT j FROM GenerationJob j WHERE j.configId = :configId AND j.status IN :statuses ORDER BY j.createdAt DESC")
     java.util.List<GenerationJob> findActiveJobsForConfig(@org.springframework.data.repository.query.Param("configId") UUID configId, @org.springframework.data.repository.query.Param("statuses") java.util.List<JobStatus> statuses);
+
+    /**
+     * Fails all orphaned jobs on server startup.
+     * Any PENDING or PROCESSING job from a previous JVM session has no worker thread — it will never complete.
+     */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("UPDATE GenerationJob j SET j.status = 'FAILED', j.errorMessage = :reason, j.completedAt = :now WHERE j.status IN :statuses")
+    int failAllOrphanedJobs(@org.springframework.data.repository.query.Param("statuses") java.util.List<JobStatus> statuses,
+                            @org.springframework.data.repository.query.Param("reason") String reason,
+                            @org.springframework.data.repository.query.Param("now") java.time.LocalDateTime now);
 }

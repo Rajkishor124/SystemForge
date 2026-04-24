@@ -26,6 +26,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.annotation.PostConstruct;
+
 /**
  * Background worker for executing AI generation jobs asynchronously.
  *
@@ -46,6 +48,24 @@ public class GenerationWorker {
     private final EventBus eventBus;
     private final MabaOrchestrator mabaOrchestrator;
     private final GenerationMetrics metrics;
+
+    /**
+     * On server startup, fail ALL orphaned PENDING/PROCESSING jobs.
+     * Their worker threads died when the previous JVM shut down — they will never complete.
+     * This ensures no zombie jobs block future generation attempts for the same config.
+     */
+    @PostConstruct
+    public void failOrphanedJobsOnStartup() {
+        int failed = jobRepository.failAllOrphanedJobs(
+                List.of(JobStatus.PENDING, JobStatus.PROCESSING),
+                "Server restarted — job worker was lost. Please retry.",
+                LocalDateTime.now());
+        if (failed > 0) {
+            log.warn("event=STARTUP_ORPHAN_CLEANUP failedJobs={} message=Marked orphaned PENDING/PROCESSING jobs as FAILED", failed);
+        } else {
+            log.info("event=STARTUP_ORPHAN_CLEANUP failedJobs=0 message=No orphaned jobs found");
+        }
+    }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async("aiGenerationExecutor")
