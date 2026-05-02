@@ -9,18 +9,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.*;
-
 /**
  * Multi-Agent Backend Architecture (MABA) Orchestrator.
  *
  * <p>Executes the 7-phase agent pipeline defined in the Enhanced Agent Prompt Suite:
  * <pre>
  *   Phase 0 → Orchestrator (Requirement Contract decomposition)
- *   Phase 1 → RAG Engine + Requirements Analyst (parallel)
+ *   Phase 1 → RAG Engine, then Requirements Analyst (sequential)
  *   Phase 2 → System Architect
- *   Phase 3 → Database Architect + API Designer (parallel)
- *   Phase 4 → Scalability Engineer + Security Engineer (parallel)
+ *   Phase 3 → Database Architect, then API Designer (sequential)
+ *   Phase 4 → Scalability Engineer, then Security Engineer (sequential)
  *   Phase 5 → Implementation Planner
  *   Phase 6 → Final Synthesizer
  * </pre>
@@ -29,7 +27,8 @@ import java.util.concurrent.*;
  * <ul>
  *   <li>Each agent call uses the full system-prompt from {@link MabaPromptRegistry}</li>
  *   <li>Downstream agents receive upstream outputs via {@link MabaContext#buildDownstreamContext}</li>
- *   <li>Parallel phases use {@link CompletableFuture} with per-phase timeouts</li>
+ *   <li><b>All agents run sequentially</b> with a configurable inter-call delay to respect
+ *       LLM provider rate limits (critical for free-tier API keys)</li>
  *   <li>SSE progress events are emitted at each phase boundary for real-time client updates</li>
  *   <li>Individual agent failures are isolated — the pipeline continues with degraded output</li>
  *   <li>Missing prompts are handled gracefully (agent is skipped, not crashed)</li>
@@ -43,18 +42,15 @@ public class MabaOrchestrator {
 
     private static final int TOTAL_PHASES = 7;
 
-    /** Maximum time a single agent call can take before being considered stuck. */
-    private static final long SINGLE_AGENT_TIMEOUT_MS = 120_000; // 2 minutes
-
-    /** Maximum time a parallel phase (2 agents) can take. */
-    private static final long PARALLEL_PHASE_TIMEOUT_MS = 150_000; // 2.5 minutes
+    /**
+     * Delay in milliseconds between sequential agent calls.
+     * This prevents overwhelming rate-limited LLM APIs (e.g., Gemini free tier: 15 RPM).
+     */
+    private static final long INTER_AGENT_DELAY_MS = 4_000; // 4 seconds
 
     private final LlmClient llmClient;
     private final MabaPromptRegistry promptRegistry;
     private final EventBus eventBus;
-
-    // Virtual threads for parallel agent execution (Java 21+)
-    private final ExecutorService parallelExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
     /**
      * Execute the full MABA pipeline.
@@ -81,16 +77,18 @@ public class MabaOrchestrator {
                 context.getWarnings().add("Orchestrator produced empty output; using raw requirements.");
             }
 
-            // Phase 1: RAG + Requirements Analyst (parallel)
-            executeParallelPhase(context, 1, "Knowledge Retrieval & Requirements",
-                    () -> runAgent(context, AgentRole.RAG_ENGINE,
-                            "Analyze the following requirements and retrieve relevant architectural patterns:\n\n"
-                            + context.getRequirementContract()),
-                    () -> runAgent(context, AgentRole.REQUIREMENTS_ANALYST,
-                            "Analyze the following requirements into a structured specification:\n\n"
-                            + context.getUserRequirements() + "\n\n"
-                            + "REQUIREMENT CONTRACT:\n" + context.getRequirementContract())
-            );
+            // Phase 1a: RAG Engine
+            executePhase(context, 1, "Knowledge Retrieval", () -> runAgent(context, AgentRole.RAG_ENGINE,
+                    "Analyze the following requirements and retrieve relevant architectural patterns:\n\n"
+                    + context.getRequirementContract()));
+            rateLimitDelay();
+
+            // Phase 1b: Requirements Analyst
+            executePhase(context, 1, "Requirements Analysis", () -> runAgent(context, AgentRole.REQUIREMENTS_ANALYST,
+                    "Analyze the following requirements into a structured specification:\n\n"
+                    + context.getUserRequirements() + "\n\n"
+                    + "REQUIREMENT CONTRACT:\n" + context.getRequirementContract()));
+            rateLimitDelay();
 
             // Phase 2: System Architect
             executePhase(context, 2, "System Architecture", () -> runAgent(
@@ -98,30 +96,36 @@ public class MabaOrchestrator {
                     "Design the system architecture based on the following inputs:\n\n"
                     + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST, AgentRole.RAG_ENGINE)
             ));
+            rateLimitDelay();
 
-            // Phase 3: DB Architect + API Designer (parallel)
-            executeParallelPhase(context, 3, "Data & API Design",
-                    () -> runAgent(context, AgentRole.DB_DESIGNER,
-                            "Design the database architecture:\n\n"
-                            + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
-                                    AgentRole.SYSTEM_ARCHITECT, AgentRole.RAG_ENGINE)),
-                    () -> runAgent(context, AgentRole.API_DESIGNER,
-                            "Design the API contracts:\n\n"
-                            + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
-                                    AgentRole.SYSTEM_ARCHITECT))
-            );
+            // Phase 3a: DB Architect
+            executePhase(context, 3, "Database Design", () -> runAgent(context, AgentRole.DB_DESIGNER,
+                    "Design the database architecture:\n\n"
+                    + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
+                            AgentRole.SYSTEM_ARCHITECT, AgentRole.RAG_ENGINE)));
+            rateLimitDelay();
 
-            // Phase 4: Scalability + Security (parallel)
-            executeParallelPhase(context, 4, "Scalability & Security",
-                    () -> runAgent(context, AgentRole.SCALABILITY_ENGINEER,
-                            "Design the scalability and reliability strategy:\n\n"
-                            + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
-                                    AgentRole.SYSTEM_ARCHITECT, AgentRole.DB_DESIGNER)),
-                    () -> runAgent(context, AgentRole.SECURITY_ENGINEER,
-                            "Design the security architecture:\n\n"
-                            + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
-                                    AgentRole.SYSTEM_ARCHITECT, AgentRole.API_DESIGNER, AgentRole.RAG_ENGINE))
-            );
+            // Phase 3b: API Designer
+            executePhase(context, 3, "API Design", () -> runAgent(context, AgentRole.API_DESIGNER,
+                    "Design the API contracts:\n\n"
+                    + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
+                            AgentRole.SYSTEM_ARCHITECT)));
+            rateLimitDelay();
+
+            // Phase 4a: Scalability Engineer
+            executePhase(context, 4, "Scalability Engineering", () -> runAgent(context, AgentRole.SCALABILITY_ENGINEER,
+                    "Design the scalability and reliability strategy:\n\n"
+                    + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
+                            AgentRole.SYSTEM_ARCHITECT, AgentRole.DB_DESIGNER)));
+            rateLimitDelay();
+
+            // Phase 4b: Security Engineer
+            executePhase(context, 4, "Security Engineering", () -> runAgent(context, AgentRole.SECURITY_ENGINEER,
+                    "Design the security architecture:\n\n"
+                    + context.buildDownstreamContext(AgentRole.REQUIREMENTS_ANALYST,
+                            AgentRole.SYSTEM_ARCHITECT, AgentRole.API_DESIGNER, AgentRole.RAG_ENGINE)));
+
+            rateLimitDelay();
 
             // Phase 5: Implementation Planner
             executePhase(context, 5, "Implementation Planning", () -> runAgent(
@@ -132,6 +136,8 @@ public class MabaOrchestrator {
                             AgentRole.API_DESIGNER, AgentRole.SCALABILITY_ENGINEER,
                             AgentRole.SECURITY_ENGINEER)
             ));
+
+            rateLimitDelay();
 
             // Phase 6: Final Synthesis
             executePhase(context, 6, "Final Synthesis", () -> runFinalSynthesis(context));
@@ -182,48 +188,7 @@ public class MabaOrchestrator {
         log.info("[MABA:{}] Phase {} completed in {}ms", context.getTraceId(), phase, duration);
     }
 
-    private void executeParallelPhase(MabaContext context, int phase, String name,
-                                       Runnable taskA, Runnable taskB) {
-        checkInterrupted(context);
 
-        context.setCurrentPhase(phase);
-        emitProgress(context, name, phase);
-        log.info("[MABA:{}] Phase {} — {} (parallel)", context.getTraceId(), phase, name);
-
-        long start = System.currentTimeMillis();
-
-        CompletableFuture<Void> futureA = CompletableFuture.runAsync(taskA, parallelExecutor);
-        
-        // Stagger execution slightly to avoid hitting API burst limits (especially for free-tier keys)
-        stagger();
-        
-        CompletableFuture<Void> futureB = CompletableFuture.runAsync(taskB, parallelExecutor);
-
-        try {
-            // Wait with timeout to prevent infinite hangs
-            CompletableFuture.allOf(futureA, futureB)
-                    .get(PARALLEL_PHASE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException e) {
-            log.error("[MABA:{}] Phase {} (parallel) timed out after {}ms",
-                    context.getTraceId(), phase, PARALLEL_PHASE_TIMEOUT_MS);
-            context.getWarnings().add("Phase " + phase + " (" + name + ") timed out.");
-            // Cancel the futures — the agents will record as FAILED via their own catch blocks
-            futureA.cancel(true);
-            futureB.cancel(true);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Pipeline interrupted during parallel phase " + phase, e);
-        } catch (ExecutionException e) {
-            // Individual agent errors are already caught inside runAgent();
-            // this handles unexpected errors in the future composition itself
-            log.error("[MABA:{}] Phase {} (parallel) execution error: {}",
-                    context.getTraceId(), phase, e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
-        }
-
-        long duration = System.currentTimeMillis() - start;
-        emitPhaseCompleted(context, name, phase, duration);
-        log.info("[MABA:{}] Phase {} (parallel) completed in {}ms", context.getTraceId(), phase, duration);
-    }
 
     // ─── Agent Runners ────────────────────────────────────────────────────
 
@@ -443,12 +408,13 @@ public class MabaOrchestrator {
     }
 
     /**
-     * Introduces a small delay to prevent overwhelming LLM API burst limits.
+     * Introduces a delay between sequential agent calls to respect LLM API rate limits.
+     * Gemini free tier allows ~15 RPM, so 4 seconds between calls keeps us well under.
      */
-    private void stagger() {
+    private void rateLimitDelay() {
         try {
-            // 1.5 seconds is usually enough to clear typical concurrency/burst limits
-            Thread.sleep(1500);
+            log.debug("[MABA] Rate-limit delay: waiting {}ms before next agent call", INTER_AGENT_DELAY_MS);
+            Thread.sleep(INTER_AGENT_DELAY_MS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

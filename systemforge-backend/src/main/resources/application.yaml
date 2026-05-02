@@ -158,26 +158,25 @@ resilience4j:
     instances:
       openai:
         sliding-window-type: COUNT_BASED
-        sliding-window-size: 10
-        minimum-number-of-calls: 5
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 60s
-        permitted-number-of-calls-in-half-open-state: 3
-        slow-call-duration-threshold: 45s
-        slow-call-rate-threshold: 80
+        sliding-window-size: 20
+        minimum-number-of-calls: 15
+        failure-rate-threshold: 80
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 5
+        slow-call-duration-threshold: 120s
+        slow-call-rate-threshold: 90
         record-exceptions:
           - java.net.SocketTimeoutException
           - java.net.ConnectException
           - java.io.IOException
-          - java.lang.RuntimeException
         ignore-exceptions:
           - java.lang.IllegalArgumentException
           - jakarta.validation.ValidationException
   retry:
     instances:
       openai:
-        max-attempts: 3
-        wait-duration: 2s
+        max-attempts: 5
+        wait-duration: 15s
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
         retry-exceptions:
