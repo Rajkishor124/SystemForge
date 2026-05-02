@@ -104,6 +104,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sseRetriesRef = useRef(0);
   const mountedRef = useRef(true);
+  const statusRef = useRef<StreamStatus>('idle');
   const lastHeartbeatRef = useRef<number>(Date.now());
 
   // ─── SSE Event Handlers ─────────────────────────────────────────────
@@ -113,6 +114,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
 
     switch (event.type) {
       case 'connected':
+        statusRef.current = 'connected';
         setState(prev => ({
           ...prev,
           status: 'connected',
@@ -126,6 +128,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
             s => s.name === event.step && s.order === event.order
           );
           if (existing) {
+            statusRef.current = 'streaming';
             return {
               ...prev,
               status: 'streaming',
@@ -136,6 +139,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
               ),
             };
           }
+          statusRef.current = 'streaming';
           return {
             ...prev,
             status: 'streaming',
@@ -192,6 +196,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
         break;
 
       case 'completed':
+        statusRef.current = 'completed';
         setState(prev => ({
           ...prev,
           status: 'completed',
@@ -201,6 +206,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
         break;
 
       case 'failed':
+        statusRef.current = 'failed';
         setState(prev => ({
           ...prev,
           status: 'failed',
@@ -215,12 +221,10 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           eventSourceRef.current.close();
           eventSourceRef.current = null;
         }
-        setState(prev => {
-          if (prev.status !== 'completed' && prev.status !== 'failed') {
-            return { ...prev, status: 'polling_fallback', isFallback: true };
-          }
-          return prev;
-        });
+        if (statusRef.current !== 'completed' && statusRef.current !== 'failed') {
+          statusRef.current = 'polling_fallback';
+          setState(prev => ({ ...prev, status: 'polling_fallback', isFallback: true }));
+        }
         break;
 
       case 'token_expired':
@@ -230,6 +234,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           eventSourceRef.current.close();
           eventSourceRef.current = null;
         }
+        statusRef.current = 'token_expired';
         setState(prev => ({
           ...prev,
           status: 'token_expired',
@@ -255,6 +260,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           if (!mountedRef.current) return;
 
           if (job.status === 'COMPLETED') {
+            statusRef.current = 'completed';
             setState(prev => ({
               ...prev,
               status: 'completed',
@@ -266,6 +272,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
               pollIntervalRef.current = null;
             }
           } else if (job.status === 'FAILED') {
+            statusRef.current = 'failed';
             setState(prev => ({
               ...prev,
               status: 'failed',
@@ -349,14 +356,11 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
 
         es.onerror = () => {
           // Don't reconnect if we're in a terminal state
-          setState(prev => {
-            if (prev.status === 'completed' || prev.status === 'failed') {
-              es.close();
-              eventSourceRef.current = null;
-              return prev;
-            }
-            return prev;
-          });
+          if (statusRef.current === 'completed' || statusRef.current === 'failed') {
+            es.close();
+            eventSourceRef.current = null;
+            return;
+          }
 
           sseRetriesRef.current++;
           const attempt = sseRetriesRef.current;
@@ -378,6 +382,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
           es.close();
           eventSourceRef.current = null;
 
+          statusRef.current = 'connecting';
           setState(prev => ({
             ...prev,
             status: 'connecting',
@@ -407,6 +412,7 @@ export function useGenerationStream(jobId: string | null): GenerationStreamState
 
     if (!jobId) return;
 
+    statusRef.current = 'connecting';
     setState({
       status: 'connecting',
       steps: [],
