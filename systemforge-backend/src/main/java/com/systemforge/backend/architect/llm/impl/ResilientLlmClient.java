@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.http.HttpTimeoutException;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -36,6 +38,11 @@ import java.util.function.Supplier;
  */
 @Slf4j
 public class ResilientLlmClient implements LlmClient {
+
+    /** HTTP status codes that should trigger retries. */
+    private static final Set<String> RETRYABLE_STATUS_PATTERNS = Set.of(
+            "429", "500", "502", "503", "504", "520", "522", "524"
+    );
 
     private final LlmClient delegate;
     private final CircuitBreaker circuitBreaker;
@@ -66,9 +73,13 @@ public class ResilientLlmClient implements LlmClient {
 
         retry.getEventPublisher()
                 .onRetry(event -> log.info(
-                        "[RETRY] Attempt #{} for OpenAI call, waiting {}ms before next",
+                        "[RETRY] Attempt #{} for OpenAI call, waiting {}ms before next. Cause: {}",
                         event.getNumberOfRetryAttempts(),
-                        event.getWaitInterval().toMillis()));
+                        event.getWaitInterval().toMillis(),
+                        event.getLastThrowable() != null
+                                ? event.getLastThrowable().getClass().getSimpleName()
+                                        + ": " + event.getLastThrowable().getMessage()
+                                : "unknown"));
     }
 
     @Override
@@ -85,8 +96,8 @@ public class ResilientLlmClient implements LlmClient {
             return buildFallbackResponse();
         } catch (Exception e) {
             if (isRetryableFailure(e)) {
-                log.error("[RESILIENT_LLM] All retries exhausted for complete(): {}",
-                        e.getMessage());
+                log.error("[RESILIENT_LLM] All retries exhausted for complete(): {} - {}",
+                        e.getClass().getSimpleName(), e.getMessage());
                 return buildFallbackResponse();
             }
             // Non-retryable (business error) — propagate
@@ -113,8 +124,8 @@ public class ResilientLlmClient implements LlmClient {
                     "Please try again in 60 seconds.", e);
         } catch (Exception e) {
             if (isRetryableFailure(e)) {
-                log.error("[RESILIENT_LLM] All retries exhausted for completeStructured({}): {}",
-                        responseType.getSimpleName(), e.getMessage());
+                log.error("[RESILIENT_LLM] All retries exhausted for completeStructured({}): {} - {}",
+                        responseType.getSimpleName(), e.getClass().getSimpleName(), e.getMessage());
                 throw new RuntimeException(
                         "AI service temporarily unavailable after retries. " +
                         "Please try again later.", e);
@@ -131,6 +142,21 @@ public class ResilientLlmClient implements LlmClient {
         CircuitBreaker.State state = circuitBreaker.getState();
         return state != CircuitBreaker.State.OPEN &&
                state != CircuitBreaker.State.FORCED_OPEN;
+    }
+
+    /**
+     * Returns the current state of the circuit breaker.
+     * Useful for health checks and status endpoints.
+     */
+    public CircuitBreaker.State getCircuitBreakerState() {
+        return circuitBreaker.getState();
+    }
+
+    /**
+     * Returns the circuit breaker metrics for observability.
+     */
+    public CircuitBreaker.Metrics getCircuitBreakerMetrics() {
+        return circuitBreaker.getMetrics();
     }
 
     // ─── Fallback ─────────────────────────────────────────────────────────
@@ -152,27 +178,56 @@ public class ResilientLlmClient implements LlmClient {
 
     /**
      * Determines if a failure should be retried.
-     * Only infrastructure/network failures are retryable.
-     * Business errors (bad input, validation) are not.
+     *
+     * <p>Uses a structured approach:
+     * <ol>
+     *   <li>Check the exception type hierarchy (SocketTimeout, Connect, IO, HttpTimeout)</li>
+     *   <li>Check the message for known HTTP status codes (429, 5xx)</li>
+     *   <li>Check for rate-limit / timeout keywords in the message</li>
+     * </ol>
+     *
+     * <p>Business errors (bad input, validation) are NOT retryable.
      */
     private boolean isRetryableFailure(Throwable t) {
         Throwable root = getRootCause(t);
-        return root instanceof SocketTimeoutException ||
-               root instanceof ConnectException ||
-               root instanceof IOException ||
-               root.getMessage() != null && (
-                       root.getMessage().contains("timeout") ||
-                       root.getMessage().contains("5") && root.getMessage().contains("00") ||
-                       root.getMessage().contains("503") ||
-                       root.getMessage().contains("502") ||
-                       root.getMessage().contains("429")
-               );
+
+        // 1. Exception type check
+        if (root instanceof SocketTimeoutException
+                || root instanceof ConnectException
+                || root instanceof HttpTimeoutException
+                || root instanceof IOException) {
+            return true;
+        }
+
+        // 2. Message-based status code check
+        String message = root.getMessage();
+        if (message == null) return false;
+
+        for (String code : RETRYABLE_STATUS_PATTERNS) {
+            if (message.contains(code)) {
+                return true;
+            }
+        }
+
+        // 3. Keyword check for common transient error patterns
+        String lower = message.toLowerCase();
+        return lower.contains("timeout")
+                || lower.contains("rate limit")
+                || lower.contains("rate_limit")
+                || lower.contains("too many requests")
+                || lower.contains("connection reset")
+                || lower.contains("connection refused")
+                || lower.contains("server error")
+                || lower.contains("temporarily unavailable");
     }
 
     private Throwable getRootCause(Throwable t) {
         Throwable cause = t;
-        while (cause.getCause() != null && cause.getCause() != cause) {
+        int depth = 0;
+        // Guard against circular cause chains
+        while (cause.getCause() != null && cause.getCause() != cause && depth < 10) {
             cause = cause.getCause();
+            depth++;
         }
         return cause;
     }

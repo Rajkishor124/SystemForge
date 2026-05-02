@@ -10,6 +10,10 @@ import lombok.Getter;
  *
  * <p>Contains the agent's full markdown output, the role that produced it,
  * token usage for cost tracking, and execution timing for observability.
+ *
+ * <p>Output validation: the {@link #isUsable()} method checks whether the
+ * content is non-null and non-blank, providing a simple quality gate for
+ * downstream agents.
  */
 @Getter
 @Builder
@@ -24,7 +28,7 @@ public class AgentOutput {
     /** Structured summary for the agent audit log. */
     private final String summary;
 
-    /** Status: COMPLETED, FAILED, SKIPPED. */
+    /** Status: COMPLETED, DEGRADED, FAILED, SKIPPED. */
     private final String status;
 
     /** Approximate input tokens consumed. */
@@ -39,19 +43,38 @@ public class AgentOutput {
     /** Whether this output came from a fallback. */
     private final boolean fallback;
 
+    /** The model ID that produced this output (e.g., "gpt-4o-mini", "fallback-rule-engine"). */
+    private final String modelUsed;
+
     /**
      * Convenience factory from a raw {@link LlmResponse}.
+     *
+     * <p>Performs basic output validation: if the LLM returned empty/null content,
+     * the status is downgraded to DEGRADED.
      */
     public static AgentOutput fromLlmResponse(AgentRole role, LlmResponse response, long durationMs) {
+        String content = response.getContent();
+        boolean contentEmpty = content == null || content.isBlank();
+        String effectiveStatus;
+
+        if (response.isFallback()) {
+            effectiveStatus = "DEGRADED";
+        } else if (contentEmpty) {
+            effectiveStatus = "DEGRADED";
+        } else {
+            effectiveStatus = "COMPLETED";
+        }
+
         return AgentOutput.builder()
                 .role(role)
-                .content(response.getContent())
-                .summary(truncate(response.getContent(), 200))
-                .status(response.isFallback() ? "DEGRADED" : "COMPLETED")
+                .content(content != null ? content : "")
+                .summary(truncate(content, 200))
+                .status(effectiveStatus)
                 .promptTokens(response.getPromptTokens())
                 .completionTokens(response.getCompletionTokens())
                 .durationMs(durationMs)
                 .fallback(response.isFallback())
+                .modelUsed(response.getModel())
                 .build();
     }
 
@@ -68,7 +91,37 @@ public class AgentOutput {
                 .completionTokens(0)
                 .durationMs(durationMs)
                 .fallback(false)
+                .modelUsed("none")
                 .build();
+    }
+
+    /**
+     * Factory for a skipped agent (e.g., when prompt is missing).
+     */
+    public static AgentOutput skipped(AgentRole role, String reason) {
+        return AgentOutput.builder()
+                .role(role)
+                .content("")
+                .summary("SKIPPED: " + reason)
+                .status("SKIPPED")
+                .promptTokens(0)
+                .completionTokens(0)
+                .durationMs(0)
+                .fallback(false)
+                .modelUsed("none")
+                .build();
+    }
+
+    /**
+     * Checks whether this output is usable by downstream agents.
+     *
+     * @return true if content is non-null, non-blank, and status is not FAILED
+     */
+    public boolean isUsable() {
+        return !"FAILED".equals(status)
+                && !"SKIPPED".equals(status)
+                && content != null
+                && !content.isBlank();
     }
 
     private static String truncate(String text, int maxLen) {

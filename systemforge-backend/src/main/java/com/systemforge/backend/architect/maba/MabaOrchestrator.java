@@ -3,15 +3,13 @@ package com.systemforge.backend.architect.maba;
 import com.systemforge.backend.architect.llm.LlmClient;
 import com.systemforge.backend.architect.llm.LlmResponse;
 import com.systemforge.backend.common.enums.AgentRole;
-import com.systemforge.backend.common.sse.SseEmitterRegistry;
+import com.systemforge.backend.common.event.EventBus;
 import com.systemforge.backend.system.dto.GenerationProgressEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Multi-Agent Backend Architecture (MABA) Orchestrator.
@@ -27,13 +25,15 @@ import java.util.concurrent.Executors;
  *   Phase 6 → Final Synthesizer
  * </pre>
  *
- * <p>Design decisions:
+ * <p>Enterprise-grade design decisions:
  * <ul>
  *   <li>Each agent call uses the full system-prompt from {@link MabaPromptRegistry}</li>
  *   <li>Downstream agents receive upstream outputs via {@link MabaContext#buildDownstreamContext}</li>
- *   <li>Parallel phases use {@link CompletableFuture} with a dedicated virtual thread executor</li>
+ *   <li>Parallel phases use {@link CompletableFuture} with per-phase timeouts</li>
  *   <li>SSE progress events are emitted at each phase boundary for real-time client updates</li>
  *   <li>Individual agent failures are isolated — the pipeline continues with degraded output</li>
+ *   <li>Missing prompts are handled gracefully (agent is skipped, not crashed)</li>
+ *   <li>Thread interruption is checked between phases for clean cancellation</li>
  * </ul>
  */
 @Service
@@ -43,9 +43,15 @@ public class MabaOrchestrator {
 
     private static final int TOTAL_PHASES = 7;
 
+    /** Maximum time a single agent call can take before being considered stuck. */
+    private static final long SINGLE_AGENT_TIMEOUT_MS = 120_000; // 2 minutes
+
+    /** Maximum time a parallel phase (2 agents) can take. */
+    private static final long PARALLEL_PHASE_TIMEOUT_MS = 150_000; // 2.5 minutes
+
     private final LlmClient llmClient;
     private final MabaPromptRegistry promptRegistry;
-    private final SseEmitterRegistry sseRegistry;
+    private final EventBus eventBus;
 
     // Virtual threads for parallel agent execution (Java 21+)
     private final ExecutorService parallelExecutor = Executors.newVirtualThreadPerTaskExecutor();
@@ -54,7 +60,7 @@ public class MabaOrchestrator {
      * Execute the full MABA pipeline.
      *
      * <p>This is the main entry point. Called from the async generation worker
-     * in {@code SystemServiceImpl.executeGenerationAsync()}.
+     * in {@code GenerationWorker.executeWithRetries()}.
      *
      * @param context the pipeline context (must have userRequirements set)
      * @return the same context, now populated with all agent outputs and the final document
@@ -66,6 +72,14 @@ public class MabaOrchestrator {
         try {
             // Phase 0: Orchestrator — decompose into Requirement Contract
             executePhase(context, 0, "Requirement Decomposition", () -> runOrchestrator(context));
+
+            // Validate: if orchestrator failed, the entire pipeline is degraded but still runs
+            if (context.getRequirementContract() == null || context.getRequirementContract().isBlank()) {
+                log.warn("[MABA:{}] Orchestrator produced empty Requirement Contract. " +
+                        "Downstream agents will use raw user requirements.", context.getTraceId());
+                context.setRequirementContract(context.getUserRequirements());
+                context.getWarnings().add("Orchestrator produced empty output; using raw requirements.");
+            }
 
             // Phase 1: RAG + Requirements Analyst (parallel)
             executeParallelPhase(context, 1, "Knowledge Retrieval & Requirements",
@@ -122,10 +136,24 @@ public class MabaOrchestrator {
             // Phase 6: Final Synthesis
             executePhase(context, 6, "Final Synthesis", () -> runFinalSynthesis(context));
 
-            context.setStatus("COMPLETED");
-            log.info("[MABA:{}] Pipeline completed in {}ms. Tokens: prompt={}, completion={}",
-                    context.getTraceId(), context.getElapsedMs(),
-                    context.getTotalPromptTokens(), context.getTotalCompletionTokens());
+            // Determine final status based on agent health
+            if (context.getFailedAgentCount() == 0) {
+                context.setStatus("COMPLETED");
+            } else if (context.getSuccessfulAgentCount() > 0 && context.getFinalDocument() != null) {
+                context.setStatus("COMPLETED");
+                context.getWarnings().add(context.getFailedAgentCount()
+                        + " agent(s) failed but the pipeline produced a result.");
+            } else {
+                context.setStatus("FAILED");
+                context.setFailureReason("All critical agents failed.");
+            }
+
+            log.info("[MABA:{}] Pipeline {} in {}ms. Tokens: prompt={}, completion={}, " +
+                            "successfulAgents={}, failedAgents={}, warnings={}",
+                    context.getTraceId(), context.getStatus(), context.getElapsedMs(),
+                    context.getTotalPromptTokens(), context.getTotalCompletionTokens(),
+                    context.getSuccessfulAgentCount(), context.getFailedAgentCount(),
+                    context.getWarnings().size());
 
         } catch (Exception e) {
             context.setStatus("FAILED");
@@ -140,6 +168,8 @@ public class MabaOrchestrator {
     // ─── Phase Executors ──────────────────────────────────────────────────
 
     private void executePhase(MabaContext context, int phase, String name, Runnable task) {
+        checkInterrupted(context);
+
         context.setCurrentPhase(phase);
         emitProgress(context, name, phase);
         log.info("[MABA:{}] Phase {} — {}", context.getTraceId(), phase, name);
@@ -148,11 +178,14 @@ public class MabaOrchestrator {
         task.run();
         long duration = System.currentTimeMillis() - start;
 
+        emitPhaseCompleted(context, name, phase, duration);
         log.info("[MABA:{}] Phase {} completed in {}ms", context.getTraceId(), phase, duration);
     }
 
     private void executeParallelPhase(MabaContext context, int phase, String name,
                                        Runnable taskA, Runnable taskB) {
+        checkInterrupted(context);
+
         context.setCurrentPhase(phase);
         emitProgress(context, name, phase);
         log.info("[MABA:{}] Phase {} — {} (parallel)", context.getTraceId(), phase, name);
@@ -162,10 +195,29 @@ public class MabaOrchestrator {
         CompletableFuture<Void> futureA = CompletableFuture.runAsync(taskA, parallelExecutor);
         CompletableFuture<Void> futureB = CompletableFuture.runAsync(taskB, parallelExecutor);
 
-        // Wait for both to complete
-        CompletableFuture.allOf(futureA, futureB).join();
+        try {
+            // Wait with timeout to prevent infinite hangs
+            CompletableFuture.allOf(futureA, futureB)
+                    .get(PARALLEL_PHASE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            log.error("[MABA:{}] Phase {} (parallel) timed out after {}ms",
+                    context.getTraceId(), phase, PARALLEL_PHASE_TIMEOUT_MS);
+            context.getWarnings().add("Phase " + phase + " (" + name + ") timed out.");
+            // Cancel the futures — the agents will record as FAILED via their own catch blocks
+            futureA.cancel(true);
+            futureB.cancel(true);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Pipeline interrupted during parallel phase " + phase, e);
+        } catch (ExecutionException e) {
+            // Individual agent errors are already caught inside runAgent();
+            // this handles unexpected errors in the future composition itself
+            log.error("[MABA:{}] Phase {} (parallel) execution error: {}",
+                    context.getTraceId(), phase, e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+        }
 
         long duration = System.currentTimeMillis() - start;
+        emitPhaseCompleted(context, name, phase, duration);
         log.info("[MABA:{}] Phase {} (parallel) completed in {}ms", context.getTraceId(), phase, duration);
     }
 
@@ -175,28 +227,53 @@ public class MabaOrchestrator {
      * Phase 0: The Orchestrator produces the Requirement Contract.
      */
     private void runOrchestrator(MabaContext context) {
+        if (!promptRegistry.hasPrompt(AgentRole.ORCHESTRATOR)) {
+            log.warn("[MABA:{}] Orchestrator prompt not loaded — using raw requirements", context.getTraceId());
+            context.setRequirementContract(context.getUserRequirements());
+            context.addAgentOutput(AgentRole.ORCHESTRATOR,
+                    AgentOutput.skipped(AgentRole.ORCHESTRATOR, "Prompt not loaded"));
+            return;
+        }
+
         String systemPrompt = promptRegistry.getPrompt(AgentRole.ORCHESTRATOR);
         String userPrompt = "Parse the following user requirements into a structured Requirement Contract. "
                 + "Output ONLY the Requirement Contract section:\n\n"
                 + context.getUserRequirements();
 
         long start = System.currentTimeMillis();
-        LlmResponse response = llmClient.complete(systemPrompt, userPrompt);
-        long duration = System.currentTimeMillis() - start;
+        try {
+            LlmResponse response = llmClient.complete(systemPrompt, userPrompt);
+            long duration = System.currentTimeMillis() - start;
 
-        context.setRequirementContract(response.getContent());
-        context.addAgentOutput(AgentRole.ORCHESTRATOR,
-                AgentOutput.fromLlmResponse(AgentRole.ORCHESTRATOR, response, duration));
+            context.setRequirementContract(response.getContent());
+            context.addAgentOutput(AgentRole.ORCHESTRATOR,
+                    AgentOutput.fromLlmResponse(AgentRole.ORCHESTRATOR, response, duration));
 
-        log.info("[MABA:{}] Orchestrator produced Requirement Contract ({}ms, {} tokens)",
-                context.getTraceId(), duration,
-                response.getPromptTokens() + response.getCompletionTokens());
+            log.info("[MABA:{}] Orchestrator produced Requirement Contract ({}ms, {} tokens, model={})",
+                    context.getTraceId(), duration,
+                    response.getPromptTokens() + response.getCompletionTokens(),
+                    response.getModel());
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - start;
+            log.error("[MABA:{}] Orchestrator failed: {}", context.getTraceId(), e.getMessage());
+            context.addAgentOutput(AgentRole.ORCHESTRATOR,
+                    AgentOutput.failed(AgentRole.ORCHESTRATOR, e.getMessage(), duration));
+        }
     }
 
     /**
      * Run a specialist agent with its system prompt and the assembled user context.
+     *
+     * <p>Failures are isolated — if this agent fails, the pipeline continues.
      */
     private void runAgent(MabaContext context, AgentRole role, String userPrompt) {
+        // Guard: check if prompt exists
+        if (!promptRegistry.hasPrompt(role)) {
+            log.warn("[MABA:{}] No prompt loaded for agent {}, skipping", context.getTraceId(), role.getRoleName());
+            context.addAgentOutput(role, AgentOutput.skipped(role, "Prompt not loaded"));
+            return;
+        }
+
         String systemPrompt = promptRegistry.getPrompt(role);
         long start = System.currentTimeMillis();
 
@@ -205,23 +282,23 @@ public class MabaOrchestrator {
             long duration = System.currentTimeMillis() - start;
 
             AgentOutput output = AgentOutput.fromLlmResponse(role, response, duration);
+            context.addAgentOutput(role, output);
 
-            // Synchronized since parallel phases write to the shared context
-            synchronized (context) {
-                context.addAgentOutput(role, output);
+            if (output.isUsable()) {
+                log.info("[MABA:{}] Agent {} completed ({}ms, {} tokens, model={}, status={})",
+                        context.getTraceId(), role.getRoleName(), duration,
+                        response.getPromptTokens() + response.getCompletionTokens(),
+                        response.getModel(), output.getStatus());
+            } else {
+                log.warn("[MABA:{}] Agent {} produced unusable output ({}ms, status={})",
+                        context.getTraceId(), role.getRoleName(), duration, output.getStatus());
             }
-
-            log.info("[MABA:{}] Agent {} completed ({}ms, {} tokens)",
-                    context.getTraceId(), role.getRoleName(), duration,
-                    response.getPromptTokens() + response.getCompletionTokens());
 
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - start;
-            log.error("[MABA:{}] Agent {} failed: {}", context.getTraceId(), role.getRoleName(), e.getMessage());
-
-            synchronized (context) {
-                context.addAgentOutput(role, AgentOutput.failed(role, e.getMessage(), duration));
-            }
+            log.error("[MABA:{}] Agent {} failed after {}ms: {}",
+                    context.getTraceId(), role.getRoleName(), duration, e.getMessage());
+            context.addAgentOutput(role, AgentOutput.failed(role, e.getMessage(), duration));
         }
     }
 
@@ -229,6 +306,15 @@ public class MabaOrchestrator {
      * Phase 6: Final Synthesis — aggregates all agent outputs into one document.
      */
     private void runFinalSynthesis(MabaContext context) {
+        if (!promptRegistry.hasPrompt(AgentRole.FINAL_SYNTHESIZER)) {
+            log.warn("[MABA:{}] Final synthesizer prompt not loaded", context.getTraceId());
+            // Build a basic document from whatever we have
+            context.setFinalDocument(buildEmergencyDocument(context));
+            context.addAgentOutput(AgentRole.FINAL_SYNTHESIZER,
+                    AgentOutput.skipped(AgentRole.FINAL_SYNTHESIZER, "Prompt not loaded"));
+            return;
+        }
+
         String systemPrompt = promptRegistry.getPrompt(AgentRole.FINAL_SYNTHESIZER);
 
         // Build the full context from all prior agents
@@ -248,14 +334,65 @@ public class MabaOrchestrator {
                 + "AGENT OUTPUTS:\n" + allOutputs;
 
         long start = System.currentTimeMillis();
-        LlmResponse response = llmClient.complete(systemPrompt, userPrompt);
-        long duration = System.currentTimeMillis() - start;
+        try {
+            LlmResponse response = llmClient.complete(systemPrompt, userPrompt);
+            long duration = System.currentTimeMillis() - start;
 
-        context.setFinalDocument(response.getContent());
-        context.addAgentOutput(AgentRole.FINAL_SYNTHESIZER,
-                AgentOutput.fromLlmResponse(AgentRole.FINAL_SYNTHESIZER, response, duration));
+            String finalContent = response.getContent();
+            if (finalContent == null || finalContent.isBlank()) {
+                log.warn("[MABA:{}] Final synthesizer returned empty content, using emergency document",
+                        context.getTraceId());
+                finalContent = buildEmergencyDocument(context);
+                context.getWarnings().add("Final synthesizer returned empty output; using emergency assembly.");
+            }
 
-        log.info("[MABA:{}] Final synthesis completed ({}ms)", context.getTraceId(), duration);
+            context.setFinalDocument(finalContent);
+            context.addAgentOutput(AgentRole.FINAL_SYNTHESIZER,
+                    AgentOutput.fromLlmResponse(AgentRole.FINAL_SYNTHESIZER, response, duration));
+
+            log.info("[MABA:{}] Final synthesis completed ({}ms, model={})",
+                    context.getTraceId(), duration, response.getModel());
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - start;
+            log.error("[MABA:{}] Final synthesis failed: {}", context.getTraceId(), e.getMessage());
+
+            // Emergency fallback: concatenate whatever we have
+            context.setFinalDocument(buildEmergencyDocument(context));
+            context.addAgentOutput(AgentRole.FINAL_SYNTHESIZER,
+                    AgentOutput.failed(AgentRole.FINAL_SYNTHESIZER, e.getMessage(), duration));
+            context.getWarnings().add("Final synthesizer failed; assembled document from raw agent outputs.");
+        }
+    }
+
+    // ─── Emergency Fallback ───────────────────────────────────────────────
+
+    /**
+     * Builds a basic document by concatenating all usable agent outputs.
+     * This is the last-resort fallback when the final synthesizer fails.
+     */
+    private String buildEmergencyDocument(MabaContext context) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# System Design Document (Auto-assembled)\n\n");
+        sb.append("> ⚠️ This document was assembled automatically because the final synthesis agent was unavailable.\n\n");
+
+        sb.append("## Requirements\n\n");
+        sb.append(context.getRequirementContract()).append("\n\n");
+
+        AgentRole[] roles = {
+                AgentRole.REQUIREMENTS_ANALYST, AgentRole.SYSTEM_ARCHITECT,
+                AgentRole.DB_DESIGNER, AgentRole.API_DESIGNER,
+                AgentRole.SCALABILITY_ENGINEER, AgentRole.SECURITY_ENGINEER,
+                AgentRole.IMPLEMENTATION_PLANNER
+        };
+
+        for (AgentRole role : roles) {
+            if (context.hasUsableOutput(role)) {
+                sb.append("## ").append(role.getRoleName()).append("\n\n");
+                sb.append(context.getAgentContent(role)).append("\n\n");
+            }
+        }
+
+        return sb.toString();
     }
 
     // ─── SSE Progress ─────────────────────────────────────────────────────
@@ -265,12 +402,39 @@ public class MabaOrchestrator {
 
         try {
             int progressPercent = (int) ((phase / (double) TOTAL_PHASES) * 100);
-            sseRegistry.send(context.getJobId(),
+            eventBus.publish(context.getJobId(),
                     GenerationProgressEvent.stepStarted(stepName, phase + 1, TOTAL_PHASES));
-            sseRegistry.send(context.getJobId(),
+            eventBus.publish(context.getJobId(),
                     GenerationProgressEvent.progress(progressPercent));
         } catch (Exception e) {
             log.debug("[MABA:{}] SSE emit failed (no listener?): {}", context.getTraceId(), e.getMessage());
+        }
+    }
+
+    private void emitPhaseCompleted(MabaContext context, String stepName, int phase, long durationMs) {
+        if (context.getJobId() == null) return;
+
+        try {
+            int progressPercent = (int) (((phase + 1) / (double) TOTAL_PHASES) * 100);
+            eventBus.publish(context.getJobId(),
+                    GenerationProgressEvent.stepCompleted(stepName, phase + 1, TOTAL_PHASES,
+                            stepName + " completed", durationMs));
+            eventBus.publish(context.getJobId(),
+                    GenerationProgressEvent.progress(Math.min(progressPercent, 99)));
+        } catch (Exception e) {
+            log.debug("[MABA:{}] SSE phase-complete emit failed: {}", context.getTraceId(), e.getMessage());
+        }
+    }
+
+    // ─── Utility ──────────────────────────────────────────────────────────
+
+    /**
+     * Checks if the current thread has been interrupted (e.g., by job cancellation)
+     * and throws early rather than starting a new phase.
+     */
+    private void checkInterrupted(MabaContext context) {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RuntimeException("Pipeline interrupted before phase " + context.getCurrentPhase());
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.systemforge.backend.system.worker;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.systemforge.backend.architect.maba.MabaContext;
 import com.systemforge.backend.architect.maba.MabaOrchestrator;
 import com.systemforge.backend.common.enums.JobStatus;
@@ -35,19 +36,36 @@ import jakarta.annotation.PostConstruct;
  * AFTER the PENDING job has been successfully committed to the database,
  * preventing race conditions.
  *
- * <p>Structured logging: every log line includes jobId, userId, status
- * via MDC for correlation in ELK/Datadog.
+ * <p>Enterprise reliability features:
+ * <ul>
+ *   <li>Atomic PENDING→PROCESSING transition prevents duplicate execution</li>
+ *   <li>Exponential backoff between retries (5s, 15s, 45s)</li>
+ *   <li>Jackson-based MABA metadata serialization (no manual JSON)</li>
+ *   <li>MDC-based structured logging for all downstream log lines</li>
+ *   <li>Scheduled cleanup for stuck PROCESSING jobs</li>
+ *   <li>Orphaned job cleanup on server startup</li>
+ * </ul>
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class GenerationWorker {
 
+    /** Base delay for exponential retry backoff in milliseconds. */
+    private static final long RETRY_BASE_DELAY_MS = 5_000; // 5 seconds
+
+    /** Multiplier for exponential backoff. Delays: 5s, 15s, 45s. */
+    private static final double RETRY_BACKOFF_MULTIPLIER = 3.0;
+
+    /** Maximum time a job can stay in PROCESSING before being considered stuck. */
+    private static final int STUCK_JOB_TIMEOUT_MINUTES = 10;
+
     private final GenerationJobRepository jobRepository;
     private final UserSystemConfigRepository configRepository;
     private final EventBus eventBus;
     private final MabaOrchestrator mabaOrchestrator;
     private final GenerationMetrics metrics;
+    private final ObjectMapper objectMapper;
 
     /**
      * On server startup, fail ALL orphaned PENDING/PROCESSING jobs.
@@ -150,7 +168,7 @@ public class GenerationWorker {
 
             job.setStatus(JobStatus.COMPLETED);
             job.setResultJson(outputJson);
-            job.setMabaMetadata(mabaContext.toMetadataJson());
+            job.setMabaMetadata(serializeMetadata(mabaContext));
             job.setCompletedAt(LocalDateTime.now());
             jobRepository.saveAndFlush(job);
 
@@ -168,20 +186,26 @@ public class GenerationWorker {
             metrics.incrementCompleted();
             metrics.getJobDuration().record(Duration.ofMillis(totalDurationMs));
 
-            log.info("event=JOB_COMPLETED jobId={} userId={} status=COMPLETED durationMs={} totalTokens={} attempt={}/{}",
+            log.info("event=JOB_COMPLETED jobId={} userId={} status=COMPLETED durationMs={} totalTokens={} " +
+                            "successfulAgents={} failedAgents={} warnings={} attempt={}/{}",
                     jobId, job.getUserId(), totalDurationMs, totalTokens,
+                    mabaContext.getSuccessfulAgentCount(), mabaContext.getFailedAgentCount(),
+                    mabaContext.getWarnings().size(),
                     job.getRetryCount() + 1, job.getMaxRetries());
 
         } catch (Exception e) {
-            log.error("event=JOB_EXECUTION_ERROR jobId={} userId={} error={}", jobId, job.getUserId(), e.getMessage(), e);
+            log.error("event=JOB_EXECUTION_ERROR jobId={} userId={} errorType={} error={}",
+                    jobId, job.getUserId(), e.getClass().getSimpleName(), e.getMessage(), e);
 
             job.setRetryCount(job.getRetryCount() + 1);
 
             if (job.getRetryCount() >= job.getMaxRetries()) {
+                // ─── Final failure: max retries exhausted ─────────────────
                 job.setStatus(JobStatus.FAILED);
-                job.setErrorMessage("Max retries exceeded. Last error: " + e.getMessage());
+                job.setErrorMessage(truncateErrorMessage(
+                        "Max retries exceeded. Last error: " + e.getMessage()));
                 if (mabaContext != null) {
-                    job.setMabaMetadata(mabaContext.toMetadataJson());
+                    job.setMabaMetadata(serializeMetadata(mabaContext));
                 }
                 job.setCompletedAt(LocalDateTime.now());
                 jobRepository.saveAndFlush(job);
@@ -195,14 +219,22 @@ public class GenerationWorker {
                 log.error("event=JOB_FAILED jobId={} userId={} status=FAILED retryCount={} maxRetries={} lastError={}",
                         jobId, job.getUserId(), job.getRetryCount(), job.getMaxRetries(), e.getMessage());
             } else {
-                log.warn("event=JOB_RETRY jobId={} userId={} attempt={}/{} error={}",
-                        jobId, job.getUserId(), job.getRetryCount(), job.getMaxRetries(), e.getMessage());
+                // ─── Retry with exponential backoff ───────────────────────
+                long delayMs = calculateRetryDelay(job.getRetryCount());
+
+                log.warn("event=JOB_RETRY jobId={} userId={} attempt={}/{} retryDelayMs={} error={}",
+                        jobId, job.getUserId(), job.getRetryCount(), job.getMaxRetries(),
+                        delayMs, e.getMessage());
 
                 metrics.incrementRetries();
 
                 job.setStatus(JobStatus.PENDING);
-                job.setErrorMessage("Failed attempt " + job.getRetryCount() + ": " + e.getMessage());
+                job.setErrorMessage(truncateErrorMessage(
+                        "Failed attempt " + job.getRetryCount() + ": " + e.getMessage()));
                 jobRepository.saveAndFlush(job);
+
+                // Backoff before retrying
+                sleepBeforeRetry(delayMs);
 
                 // Retry (recursive call re-checks PENDING atomically)
                 executeWithRetries(job);
@@ -231,14 +263,14 @@ public class GenerationWorker {
     @Scheduled(fixedRate = 300000) // Run every 5 minutes
     @Transactional
     public void cleanStuckJobs() {
-        LocalDateTime timeoutThreshold = LocalDateTime.now().minusMinutes(10);
+        LocalDateTime timeoutThreshold = LocalDateTime.now().minusMinutes(STUCK_JOB_TIMEOUT_MINUTES);
         List<GenerationJob> stuckJobs = jobRepository.findByStatusAndStartedAtBefore(JobStatus.PROCESSING, timeoutThreshold);
 
         if (!stuckJobs.isEmpty()) {
             log.warn("event=STUCK_JOBS_DETECTED count={}", stuckJobs.size());
             for (GenerationJob job : stuckJobs) {
                 job.setStatus(JobStatus.FAILED);
-                job.setErrorMessage("Job exceeded maximum execution time limit (10 minutes).");
+                job.setErrorMessage("Job exceeded maximum execution time limit (" + STUCK_JOB_TIMEOUT_MINUTES + " minutes).");
                 job.setCompletedAt(LocalDateTime.now());
                 jobRepository.save(job);
 
@@ -247,10 +279,56 @@ public class GenerationWorker {
                 eventBus.publish(job.getId(), GenerationProgressEvent.failed(job.getId().toString(), job.getErrorMessage()));
                 eventBus.complete(job.getId());
 
-                log.warn("event=STUCK_JOB_FAILED jobId={} userId={} message=Timed out after 10 minutes",
-                        job.getId(), job.getUserId());
+                log.warn("event=STUCK_JOB_FAILED jobId={} userId={} message=Timed out after {} minutes",
+                        job.getId(), job.getUserId(), STUCK_JOB_TIMEOUT_MINUTES);
             }
         }
+    }
+
+    // ─── Utility ──────────────────────────────────────────────────────────
+
+    /**
+     * Serialize MABA metadata using Jackson instead of manual JSON.
+     * Falls back to a minimal JSON string if serialization fails.
+     */
+    private String serializeMetadata(MabaContext mabaContext) {
+        try {
+            return objectMapper.writeValueAsString(mabaContext.toMetadataMap());
+        } catch (Exception e) {
+            log.error("event=METADATA_SERIALIZATION_FAILED traceId={} error={}",
+                    mabaContext.getTraceId(), e.getMessage());
+            return "{\"traceId\":\"" + mabaContext.getTraceId()
+                    + "\",\"status\":\"" + mabaContext.getStatus()
+                    + "\",\"serializationError\":\"" + e.getMessage().replace("\"", "'") + "\"}";
+        }
+    }
+
+    /**
+     * Calculate retry delay with exponential backoff.
+     * Attempt 1: 5s, Attempt 2: 15s, Attempt 3: 45s.
+     */
+    private long calculateRetryDelay(int attemptNumber) {
+        return (long) (RETRY_BASE_DELAY_MS * Math.pow(RETRY_BACKOFF_MULTIPLIER, attemptNumber - 1));
+    }
+
+    /**
+     * Sleep with interruption check for retry backoff.
+     */
+    private void sleepBeforeRetry(long delayMs) {
+        try {
+            Thread.sleep(delayMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("event=RETRY_SLEEP_INTERRUPTED message=Retry delay was interrupted");
+        }
+    }
+
+    /**
+     * Truncate error messages to prevent blowing up the TEXT column.
+     */
+    private String truncateErrorMessage(String message) {
+        if (message == null) return null;
+        return message.length() > 2000 ? message.substring(0, 2000) + "..." : message;
     }
 
     private void setJobMdc(GenerationJob job) {
