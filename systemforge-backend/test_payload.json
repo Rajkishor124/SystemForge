@@ -1,1 +1,1 @@
-{"model": "gemini-2.0-flash", "messages": [{"role": "user", "content": "Hello"}]}
+{"model":"gemini-2.0-flash","messages":[{"role":"user","content":"Say hi"}]}

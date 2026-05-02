@@ -46,7 +46,7 @@ public class MabaOrchestrator {
      * Delay in milliseconds between sequential agent calls.
      * This prevents overwhelming rate-limited LLM APIs (e.g., Gemini free tier: 15 RPM).
      */
-    private static final long INTER_AGENT_DELAY_MS = 4_000; // 4 seconds
+    private static final long INTER_AGENT_DELAY_MS = 2_000; // 2 seconds
 
     private final LlmClient llmClient;
     private final MabaPromptRegistry promptRegistry;

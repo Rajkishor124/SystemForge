@@ -175,8 +175,8 @@ resilience4j:
   retry:
     instances:
       openai:
-        max-attempts: 5
-        wait-duration: 15s
+        max-attempts: 3
+        wait-duration: 5s
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
         retry-exceptions:
