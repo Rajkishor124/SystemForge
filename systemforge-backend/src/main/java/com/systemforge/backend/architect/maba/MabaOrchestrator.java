@@ -193,6 +193,10 @@ public class MabaOrchestrator {
         long start = System.currentTimeMillis();
 
         CompletableFuture<Void> futureA = CompletableFuture.runAsync(taskA, parallelExecutor);
+        
+        // Stagger execution slightly to avoid hitting API burst limits (especially for free-tier keys)
+        stagger();
+        
         CompletableFuture<Void> futureB = CompletableFuture.runAsync(taskB, parallelExecutor);
 
         try {
@@ -435,6 +439,18 @@ public class MabaOrchestrator {
     private void checkInterrupted(MabaContext context) {
         if (Thread.currentThread().isInterrupted()) {
             throw new RuntimeException("Pipeline interrupted before phase " + context.getCurrentPhase());
+        }
+    }
+
+    /**
+     * Introduces a small delay to prevent overwhelming LLM API burst limits.
+     */
+    private void stagger() {
+        try {
+            // 1.5 seconds is usually enough to clear typical concurrency/burst limits
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }

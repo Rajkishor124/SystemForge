@@ -184,6 +184,7 @@ resilience4j:
           - java.net.SocketTimeoutException
           - java.net.ConnectException
           - java.io.IOException
+          - java.lang.RuntimeException
 
 # ─── ACTUATOR (Production Monitoring) ───────────────────────────────────────
 management:
